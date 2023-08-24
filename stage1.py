@@ -42,14 +42,27 @@ def resize_all_img(path, frame_width, frame_height):
         img = resize_img(img, frame_width, frame_height)
         cv2.imwrite(png, img)
 
+def resize_all_img_by_scale(path, scale):
+    if not os.path.isdir(path):
+        return
+    
+    pngs = glob.glob( os.path.join(path, "*.png") )
+    img = cv2.imread(pngs[0])
+    org_h,org_w = img.shape[0],img.shape[1]
 
-def ebsynth_utility_stage1(dbg, project_args, auto_pick_key_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale, key_min_gap, key_max_gap, key_th, key_add_last_frame):
+    for png in pngs:
+        img = cv2.imread(png)
+        img = resize_img(img, frame_width, frame_height)
+        cv2.imwrite(png, img)
+
+
+def ebsynth_utility_stage1(dbg, project_args, auto_pick_key_frame, frame_resize_type, frame_width, frame_height, frame_wh_scale, key_min_gap, key_max_gap, key_th, key_add_last_frame):
     dbg.print("stage1")
     dbg.print("")
 
     tmp_key_frame = 'tmp_keys'
     video_frame = 'video_frame'
-    print(selected_frame_type)
+    dbg.print(frame_resize_type)
 
     project_dir, original_movie_path, frame_path, frame_mask_path, _, _, _ = project_args
 
@@ -73,11 +86,11 @@ def ebsynth_utility_stage1(dbg, project_args, auto_pick_key_frame, selected_fram
         frame_height = max(frame_height,-1)
 
         if not auto_pick_key_frame:
-            if selected_frame_type == 0:
+            if frame_resize_type == 0:
                 if frame_width != -1 or frame_height != -1:
                     resize_all_img(frame_path, frame_width, frame_height)
             else:
-                resize_all_img(frame_path, frame_width, frame_height)
+                resize_all_img_by_scale(frame_path, frame_wh_scale)
     
     if not os.path.exists(tmp_key_frame):   
         os.makedirs(tmp_key_frame)
