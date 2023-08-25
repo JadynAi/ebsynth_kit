@@ -20,7 +20,6 @@ def on_ui_tabs():
                         original_movie_path = gr.Textbox(label='Original Movie Path', lines=1)
                         with gr.Accordion("Stage1 setting",open=False):
                             key_add_last_frame = gr.Checkbox(label="Add last frame to keyframes", value=True)
-                            auto_pick_key_frame = gr.Checkbox(label="Auto pick keyframes(select this option, the following options are all invalid)", value=True)
                             selected_frame_scale_tab = gr.State(value=0)
                             with gr.Tabs(elem_id="frame_width_height",default=1):
                                 with gr.Tab("Frame resize by size",elem_id='frame_wh_1') as frame_size:
@@ -29,11 +28,6 @@ def on_ui_tabs():
                                 with gr.Tab("Frame resize by scale",elem_id='frame_wh_2') as frame_scale:
                                     frame_wh_scale = gr.Slider(minimum=0.1, maximum=2.0, step=0.1, label='Width and height scaling', value=1.0)
                             
-                            frame_size.select(fn=lambda: 0, inputs=[], outputs=[selected_frame_scale_tab])
-                            frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
-                            key_min_gap = gr.Slider(minimum=0, maximum=500, step=1, label='Minimum keyframe gap', value=10)
-                            key_max_gap = gr.Slider(minimum=0, maximum=1000, step=1, label='Maximum keyframe gap', value=300)
-                            key_th = gr.Slider(minimum=0.0, maximum=100.0, step=0.1, label='Threshold of delta frame edge', value=8.5)                            
                         with gr.Accordion("Stage6 setting",open=False):
                             blend_rate = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Crossfade blend rate', value=1.0)
                             export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
@@ -100,18 +94,12 @@ def on_ui_tabs():
                     project_dir,
                     original_movie_path,
 
-                    auto_pick_key_frame,
-
                     selected_frame_scale_tab,
 
                     frame_width,
                     frame_height,
 
                     frame_wh_scale,
-                    key_min_gap,
-                    key_max_gap,
-                    key_th,
-                    key_add_last_frame,
 
                     blend_rate,
                     export_type,

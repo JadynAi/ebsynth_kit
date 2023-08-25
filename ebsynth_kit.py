@@ -46,6 +46,8 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
     if not os.path.isfile(original_movie_path):
         dbg.print("{0} original_movie_path not found".format(original_movie_path))
         return process_end( dbg, info )
+
+    original_movie_path = original_movie_path.replace("\"","")
     
     frame_path = os.path.join(project_dir , "video_frame")
     frame_mask_path = os.path.join(project_dir, "video_mask")
@@ -53,14 +55,14 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
     if not os.path.exists(frame_mask_path):
         os.makedirs(frame_mask_path, exist_ok=True)
 
-    frame_key_output = os.path.join(inv_path, "video_key_output")
+    frame_key_output = os.path.join(project_dir, "video_key_output")
     
 
     project_args = [project_dir, original_movie_path, frame_path, frame_mask_path, frame_key_output]
 
 
     if stage_index == 0:
-        ebsynth_utility_stage1(dbg, project_args, auto_pick_key_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale, key_min_gap, key_max_gap, key_th, key_add_last_frame)
+        ebsynth_utility_stage1(dbg, project_args, selected_frame_type, frame_width, frame_height, frame_wh_scale)
 
     elif stage_index == 1:
         dbg.print("stage 2")
