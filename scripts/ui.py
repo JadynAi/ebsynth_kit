@@ -33,13 +33,6 @@ def on_ui_tabs():
                         with gr.Accordion("Stage6 setting",open=False):
                             blend_rate = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Crossfade blend rate', value=1.0)
                             export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
-                        with gr.Accordion("Stage7 setting",open=False):
-                            bg_src = gr.Textbox(label='Background source(mp4 or directory containing images)', lines=1)
-                            bg_type = gr.Dropdown(choices=["Fit video length","Loop"], value="Fit video length" ,label="Background type")
-                            mask_blur_size = gr.Slider(minimum=0, maximum=150, step=1, label='Mask Blur Kernel Size', value=5)
-                            mask_threshold = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Mask Threshold', value=0.0)
-                            #is_transparent = gr.Checkbox(label="Is Transparent", value=True, visible = False)
-                            fg_transparency = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Foreground Transparency', value=0.0)
                                     
 
                     with gr.Column(variant='panel'):
@@ -48,7 +41,7 @@ def on_ui_tabs():
                                 debug_info = gr.HTML(elem_id="ebs_info_area", value=".")
 
                             with gr.Column(scale=2):
-                                stage_index = gr.Radio(label='Process Stage', choices=["stage 1","stage 2","stage 3","stage 4","stage 5","stage 6","stage 7"], value="stage 1", type="index")
+                                stage_index = gr.Radio(label='Process Stage', choices=["stage 1","stage 2","stage 3","stage 4","stage 5","stage 6"], value="stage 1", type="index")
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
                                                 The process of creating a video can be divided into the following stages.<br>\
                                                 (Stage 2,3 only show a guide and do nothing actual processing.)<br><br>\
@@ -63,7 +56,6 @@ def on_ui_tabs():
                                                 <b>stage 3</b> <br>\
                                                     img2img keyframes.It is recommended to use multi frame scripts to img2img.<br><br>\
                                                 <b>stage 4</b> <br>\
-                                                    Rename keyframes.<br>\
                                                     Generate .ebs file.(ebsynth project file)<br><br>\
                                                 <b>stage 5</b> <br>\
                                                     Running ebsynth.(on your self)<br>\
@@ -73,12 +65,6 @@ def on_ui_tabs():
                                                 <b>stage 6</b> <br>\
                                                     Concatenate each frame while crossfading.<br>\
                                                     Composite audio files extracted from the original video onto the concatenated video.<br><br>\
-                                                <b>stage 7</b> <br>\
-                                                    This is an extra stage.<br>\
-                                                    You can put any image or images or video you like in the background.<br>\
-                                                    You can specify in this field -> [Ebsynth Utility]->[configuration]->[stage 8]->[Background source]<br>\
-                                                    If you have already created a background video in Invert Mask Mode([Ebsynth Utility]->[configuration]->[etc]->[Mask Mode]),<br>\
-                                                    You can specify \"path_to_project_dir/inv/crossfade_tmp\".<br>\
                                                 </p>")
                             
                             with gr.Row():
