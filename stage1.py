@@ -9,6 +9,7 @@ from transformers import AutoProcessor, CLIPSegForImageSegmentation
 from PIL import Image
 import torch
 import numpy as np
+import time
 
 
 def resize_img(img, w, h):
@@ -19,7 +20,7 @@ def resize_img(img, w, h):
 
     return cv2.resize(img, (w, h), interpolation=interpolation)
 
-def resize_all_img(path, frame_width, frame_height):
+def resize_all_img(dbg, path, frame_width, frame_height):
     if not os.path.isdir(path):
         return
     
@@ -37,12 +38,13 @@ def resize_all_img(path, frame_width, frame_height):
         pass
     print("({0},{1}) resize to ({2},{3})".format(org_w, org_h, frame_width, frame_height))
 
-    for png in pngs:
+    for i,png in enumerate(pngs):
         img = cv2.imread(png)
         img = resize_img(img, frame_width, frame_height)
         cv2.imwrite(png, img)
+        dbg.print(f"Processing image {i+1}/{len(pngs)}")
 
-def resize_all_img_by_scale(path, scale):
+def resize_all_img_by_scale(dbg, path, scale):
     if not os.path.isdir(path):
         return
     if scale <= 0:
@@ -52,20 +54,22 @@ def resize_all_img_by_scale(path, scale):
     pngs = glob.glob( os.path.join(path, "*.png") )
     img = cv2.imread(pngs[0])
 
-    for png in pngs:
+    for i,png in enumerate(pngs):
         img = cv2.imread(png)
         img = cv2.resize(img, (0,0),fx=scale,fy=scale)
         cv2.imwrite(png, img)
+        dbg.print(f"Processing image {i+1}/{len(pngs)}")
 
 
-def ebsynth_utility_stage1(dbg, project_args, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def ebsynth_utility_stage1(dbg, project_args, key_add_last_frame:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
     dbg.print("stage1")
     dbg.print("")
 
-    tmp_key_frame = 'tmp_keys'
-    video_key = 'video_key'
-
     project_dir, original_movie_path, frame_path, frame_mask_path, _, = project_args
+
+    tmp_key_frame = os.path.join(project_dir , "tmp_keys")
+    video_key =  os.path.join(project_dir , "video_key")
+    dbg.print(original_movie_path)
 
     if os.path.isdir( frame_mask_path ):
         dbg.print("Skip mask dir create")
@@ -77,36 +81,47 @@ def ebsynth_utility_stage1(dbg, project_args, frame_resize_type, frame_width, fr
     else:
         os.makedirs(frame_path, exist_ok=True)
 
-        png_path = os.path.join(frame_path , "%05d.png")
         # ffmpeg.exe -ss 00:00:00  -y -i %1 -qscale 0 -f image2 -c:v png "%05d.png"
         # subprocess.call("ffmpeg -ss 00:00:00  -y -i " + original_movie_path + " -qscale 0 -f image2 -c:v png " + png_path, shell=True)
         subprocess.call(['ffmpeg', '-i', original_movie_path, 
                  '-qscale:v', '0',
                  '-f', 'image2', 
                  '-c:v', 'png',
-                 f'{frames_dir}/%05d.png'])
+                 f'{frame_path}/%05d.png'])
 
         dbg.print("frame extracted")
 
-        frame_width = max(frame_width,-1)
-        frame_height = max(frame_height,-1)
+    frame_width = max(frame_width,-1)
+    frame_height = max(frame_height,-1)
 
-        if frame_resize_type == 0:
-            if frame_width != -1 or frame_height != -1:
-                dbg.print("resize by size")
-                resize_all_img(frame_path, frame_width, frame_height)
-        elif frame_resize_type == 1:
-            if frame_wh_scale != 1:
-                dbg.print("resize by scale")
-                resize_all_img_by_scale(frame_path, frame_wh_scale)
+    if frame_resize_type == 0:
+        if frame_width != -1 or frame_height != -1:
+            dbg.print("resize by size")
+            resize_all_img(dbg, frame_path, frame_width, frame_height)
+    elif frame_resize_type == 1:
+        if frame_wh_scale != 1:
+            dbg.print("resize by scale")
+            resize_all_img_by_scale(dbg, frame_path, frame_wh_scale)
     
     if not os.path.exists(tmp_key_frame):   
         os.makedirs(tmp_key_frame)
     # 解码关键帧,检查文件夹是否跳过    
     if not os.listdir(tmp_key_frame):
         subprocess.call(['ffmpeg', '-i', original_movie_path, '-qscale:v', '0', '-vf',
-                   'select=eq(pict_type\\,I)', '-vsync', 'vfr',
+                   'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
                    '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+        
+    if frame_resize_type == 0:
+        if frame_width != -1 or frame_height != -1:
+            dbg.print("resize key by size")
+            shutil.rmtree(video_key)
+            resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
+    elif frame_resize_type == 1:
+        if frame_wh_scale != 1:
+            dbg.print("resize key by scale")
+            shutil.rmtree(video_key)
+            resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
+
     # 新文件夹路径  
     if not os.path.exists(video_key):
         os.makedirs(video_key)
@@ -114,7 +129,7 @@ def ebsynth_utility_stage1(dbg, project_args, frame_resize_type, frame_width, fr
 
         start_index = 0
         key_names = sorted(os.listdir(tmp_key_frame))  
-        frame_names = sorted(os.listdir(frames_dir))
+        frame_names = sorted(os.listdir(frame_path))
 
         for key_name in key_names:
             key = cv2.imread(os.path.join(tmp_key_frame, key_name))
@@ -122,7 +137,7 @@ def ebsynth_utility_stage1(dbg, project_args, frame_resize_type, frame_width, fr
             frame_names_subset = frame_names[start_index:]  
             print(f'check key {key_name} index {start_index}')
             for i, frame_name in enumerate(frame_names_subset):
-                frame = cv2.imread(os.path.join(frames_dir, frame_name))
+                frame = cv2.imread(os.path.join(frame_path, frame_name))
 
                 if frame.shape == key.shape:
                     diff = cv2.norm(frame, key, cv2.NORM_L1)
@@ -134,7 +149,7 @@ def ebsynth_utility_stage1(dbg, project_args, frame_resize_type, frame_width, fr
                         print(f'check equals key {key_name} and frame is {frame_name}')
                         # 找到相同的序列帧, cv2.imwrite 存储一份新的图片，但是会导致图片变大
                         # cv2.imwrite(os.path.join(video_key, frame_name), frame)
-                        shutil.copy(os.path.join(frames_dir, frame_name),os.path.join(video_key, frame_name)) 
+                        shutil.copy(os.path.join(frame_path, frame_name),os.path.join(video_key, frame_name)) 
                         break
         ### delete tmp directory
         shutil.rmtree(tmp_key_frame)

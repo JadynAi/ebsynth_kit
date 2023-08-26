@@ -28,7 +28,7 @@ class debug_string:
     def to_string(self):
         return self.txt
 
-def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_path:str, auto_pick_key_frame:bool, selected_frame_type:int, frame_width:int, frame_height:int, frame_wh_scale:float, key_min_gap:int, key_max_gap:int, key_th:float, key_add_last_frame:bool, blend_rate:float, export_type:str, bg_src:str, bg_type:str, mask_blur_size:int, mask_threshold:float, fg_transparency:float):
+def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_path:str, key_add_last_frame:bool, selected_frame_type:int, frame_width:int, frame_height:int, frame_wh_scale:float, blend_rate:float, export_type:str, bg_src:str, bg_type:str, mask_blur_size:int, mask_threshold:float, fg_transparency:float):
     args = locals()
     info = ""
     info = dump_dict(info, args)
@@ -39,16 +39,16 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
         return plaintext_to_html(dbg.to_string()), plaintext_to_html(info)
 
 
+    project_dir = project_dir.replace("\"","")
     if not os.path.isdir(project_dir):
         dbg.print("{0} project_dir not found".format(project_dir))
         return process_end( dbg, info )
 
-    if not os.path.isfile(original_movie_path):
-        dbg.print("{0} original_movie_path not found".format(original_movie_path))
+    original_movie_path_new = original_movie_path.replace("\"","")
+    if not os.path.isfile(original_movie_path_new):
+        dbg.print("{0} original_movie_path not found".format(original_movie_path_new))
         return process_end( dbg, info )
 
-    original_movie_path = original_movie_path.replace("\"","")
-    
     frame_path = os.path.join(project_dir , "video_frame")
     frame_mask_path = os.path.join(project_dir, "video_mask")
 
@@ -58,11 +58,11 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
     frame_key_output = os.path.join(project_dir, "video_key_output")
     
 
-    project_args = [project_dir, original_movie_path, frame_path, frame_mask_path, frame_key_output]
+    project_args = [project_dir, original_movie_path_new, frame_path, frame_mask_path, frame_key_output]
 
 
     if stage_index == 0:
-        ebsynth_utility_stage1(dbg, project_args, selected_frame_type, frame_width, frame_height, frame_wh_scale)
+        ebsynth_utility_stage1(dbg, project_args, key_add_last_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale)
 
     elif stage_index == 1:
         dbg.print("stage 2")

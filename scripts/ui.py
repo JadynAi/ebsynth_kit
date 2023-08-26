@@ -27,7 +27,9 @@ def on_ui_tabs():
                                     frame_height = gr.Number(value=-1, label="Frame Height", precision=0, interactive=True)
                                 with gr.Tab("Frame resize by scale",elem_id='frame_wh_2') as frame_scale:
                                     frame_wh_scale = gr.Slider(minimum=0.1, maximum=2.0, step=0.1, label='Width and height scaling', value=1.0)
-                            
+
+                            frame_size.select(fn=lambda: 0, inputs=[], outputs=[selected_frame_scale_tab])
+                            frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
                         with gr.Accordion("Stage6 setting",open=False):
                             blend_rate = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Crossfade blend rate', value=1.0)
                             export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
@@ -94,6 +96,7 @@ def on_ui_tabs():
                     project_dir,
                     original_movie_path,
 
+                    key_add_last_frame,
                     selected_frame_scale_tab,
 
                     frame_width,
