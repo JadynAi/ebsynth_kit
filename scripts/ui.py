@@ -30,6 +30,17 @@ def on_ui_tabs():
 
                             frame_size.select(fn=lambda: 0, inputs=[], outputs=[selected_frame_scale_tab])
                             frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
+                        with gr.Accordion("Stage4 setting",open=False):
+                            scale_selected_frame_scale_tab = gr.State(value=0)
+                            with gr.Tabs(elem_id="scale_frame_width_height",default=1):
+                                with gr.Tab("Frame resize by size",elem_id='scale_frame_wh_1') as scale_frame_size:
+                                    scale_frame_width = gr.Number(value=-1, label="Frame Width", precision=0, interactive=True)
+                                    scale_frame_height = gr.Number(value=-1, label="Frame Height", precision=0, interactive=True)
+                                with gr.Tab("Frame resize by scale",elem_id='scale_frame_wh_2') as scale_frame_scale:
+                                    scale_frame_wh_scale = gr.Slider(minimum=0.1, maximum=2.0, step=0.1, label='Width and height scaling', value=1.0)
+
+                            scale_frame_size.select(fn=lambda: 0, inputs=[], outputs=[selected_frame_scale_tab])
+                            scale_frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
                         with gr.Accordion("Stage6 setting",open=False):
                             blend_rate = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Crossfade blend rate', value=1.0)
                             export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
@@ -41,7 +52,7 @@ def on_ui_tabs():
                                 debug_info = gr.HTML(elem_id="ebs_info_area", value=".")
 
                             with gr.Column(scale=2):
-                                stage_index = gr.Radio(label='Process Stage', choices=["stage 1","stage 2","stage 3","stage 4","stage 5","stage 6"], value="stage 1", type="index")
+                                stage_index = gr.Radio(label='Process Stage', choices=["stage 1","stage 2","stage 3","stage 4","stage 5","stage 6","stage 7"], value="stage 1", type="index")
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
                                                 The process of creating a video can be divided into the following stages.<br>\
                                                 (Stage 2,3 only show a guide and do nothing actual processing.)<br><br>\
@@ -53,16 +64,22 @@ def on_ui_tabs():
                                                     Please note that if the video_frame or video_key folder exists, the corresponding steps will be skipped. <br><br>\
                                                 <b>stage 2(optional)</b> <br>\
                                                     Mask sequence frames.<br><br>\
+                                                    Use SegmentAnything or whatever you like to mask all images in the video_frame folder.<br><br>\
                                                 <b>stage 3</b> <br>\
                                                     img2img keyframes.It is recommended to use multi frame scripts to img2img.<br><br>\
-                                                <b>stage 4</b> <br>\
-                                                    Generate .ebs file.(ebsynth project file)<br><br>\
+                                                <b>stage 4(optional)</b> <br>\
+                                                    Enlarge or reduce all the pictures in the folder you specify, or crop them to the size you want.<br><br>\
+                                                    In the process of img2img, the size of the frame is generally reduced.<br><br>\
+                                                    The purpose of this step is to scale the image back to the size of the original video before encoding it into a video.<br><br>\
+                                                    It is recommended that you restore the size of the pictures in the video_key/video_key_output/video_frame/video_mask file.<br><br>\
                                                 <b>stage 5</b> <br>\
+                                                    Generate .ebs file.(ebsynth project file)<br><br>\
+                                                <b>stage 6</b> <br>\
                                                     Running ebsynth.(on your self)<br>\
                                                     Open the generated .ebs under project directory and press [Run All] button. <br>\
                                                     If ""out-*"" directory already exists in the Project directory, delete it manually before executing.<br>\
                                                     If multiple .ebs files are generated, run them all.<br><br>\
-                                                <b>stage 6</b> <br>\
+                                                <b>stage 7</b> <br>\
                                                     Concatenate each frame while crossfading.<br>\
                                                     Composite audio files extracted from the original video onto the concatenated video.<br><br>\
                                                 </p>")
@@ -92,12 +109,6 @@ def on_ui_tabs():
 
                     blend_rate,
                     export_type,
-
-                    bg_src,
-                    bg_type,
-                    mask_blur_size,
-                    mask_threshold,
-                    fg_transparency,
                 ],
                 outputs=[
                     debug_info,

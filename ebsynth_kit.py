@@ -28,7 +28,7 @@ class debug_string:
     def to_string(self):
         return self.txt
 
-def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_path:str, key_add_last_frame:bool, selected_frame_type:int, frame_width:int, frame_height:int, frame_wh_scale:float, blend_rate:float, export_type:str, bg_src:str, bg_type:str, mask_blur_size:int, mask_threshold:float, fg_transparency:float):
+def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_path:str, key_add_last_frame:bool, selected_frame_type:int, frame_width:int, frame_height:int, frame_wh_scale:float, blend_rate:float, export_type:str):
     args = locals()
     info = ""
     info = dump_dict(info, args)
