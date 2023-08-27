@@ -91,17 +91,17 @@ def ebsynth_utility_stage1(dbg, project_args, key_add_last_frame:bool, frame_res
 
         dbg.print("frame extracted")
 
-    frame_width = max(frame_width,-1)
-    frame_height = max(frame_height,-1)
+        frame_width = max(frame_width,-1)
+        frame_height = max(frame_height,-1)
 
-    if frame_resize_type == 0:
-        if frame_width != -1 or frame_height != -1:
-            dbg.print("resize by size")
-            resize_all_img(dbg, frame_path, frame_width, frame_height)
-    elif frame_resize_type == 1:
-        if frame_wh_scale != 1:
-            dbg.print("resize by scale")
-            resize_all_img_by_scale(dbg, frame_path, frame_wh_scale)
+        if frame_resize_type == 0:
+            if frame_width != -1 or frame_height != -1:
+                dbg.print("resize by size")
+                resize_all_img(dbg, frame_path, frame_width, frame_height)
+        elif frame_resize_type == 1:
+            if frame_wh_scale != 1:
+                dbg.print("resize by scale")
+                resize_all_img_by_scale(dbg, frame_path, frame_wh_scale)
     
     if not os.path.exists(tmp_key_frame):   
         os.makedirs(tmp_key_frame)
@@ -111,16 +111,19 @@ def ebsynth_utility_stage1(dbg, project_args, key_add_last_frame:bool, frame_res
                    'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
                    '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
         
-    if frame_resize_type == 0:
-        if frame_width != -1 or frame_height != -1:
-            dbg.print("resize key by size")
-            shutil.rmtree(video_key)
-            resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
-    elif frame_resize_type == 1:
-        if frame_wh_scale != 1:
-            dbg.print("resize key by scale")
-            shutil.rmtree(video_key)
-            resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
+        frame_width = max(frame_width,-1)
+        frame_height = max(frame_height,-1)
+        
+        if frame_resize_type == 0:
+            if frame_width != -1 or frame_height != -1:
+                dbg.print("resize key by size")
+                shutil.rmtree(video_key)
+                resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
+        elif frame_resize_type == 1:
+            if frame_wh_scale != 1:
+                dbg.print("resize key by scale")
+                shutil.rmtree(video_key)
+                resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
 
     # 新文件夹路径  
     if not os.path.exists(video_key):

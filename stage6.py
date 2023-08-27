@@ -106,7 +106,7 @@ def trying_to_add_audio(original_movie_path, no_snd_movie_path, output_path, tmp
     return False
 
 def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type):
-    dbg.print("stage 6")
+    dbg.print("stage 7")
     dbg.print("")
 
     project_dir, original_movie_path, _, _, _, _, _ = project_args

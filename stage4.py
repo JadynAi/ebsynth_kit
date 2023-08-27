@@ -27,6 +27,9 @@ def resize_all_img(dbg, path, frame_width, frame_height):
     pngs = glob.glob( os.path.join(path, "*.png") )
     img = cv2.imread(pngs[0])
     org_h,org_w = img.shape[0],img.shape[1]
+    if org_w == frame_width and org_h == frame_height:
+        print("not need to resize")
+        return
 
     if frame_width == -1 and frame_height == -1:
         return
@@ -42,7 +45,7 @@ def resize_all_img(dbg, path, frame_width, frame_height):
         img = cv2.imread(png)
         img = resize_img(img, frame_width, frame_height)
         cv2.imwrite(png, img)
-        dbg.print(f"Processing image {i+1}/{len(pngs)}")
+        print(f"Processing image {i+1}/{len(pngs)}")
 
 def resize_all_img_by_scale(dbg, path, scale):
     if not os.path.isdir(path):
@@ -58,7 +61,7 @@ def resize_all_img_by_scale(dbg, path, scale):
         img = cv2.imread(png)
         img = cv2.resize(img, (0,0),fx=scale,fy=scale)
         cv2.imwrite(png, img)
-        dbg.print(f"Processing image {i+1}/{len(pngs)}")
+        print(f"Processing image {i+1}/{len(pngs)}")
 
 
 def ebsynth_utility_stage4(dbg, project_args, auto_scale:bool,
@@ -86,19 +89,19 @@ def ebsynth_utility_stage4(dbg, project_args, auto_scale:bool,
         target_dirs = [os.path.join(project_dir , "video_key"),
                        frame_path,frame_mask_path,frame_key_output]
         for d in target_dirs:
-            dbg.print("{0}start scale".format(d))
-            scale_dir(dbg,d,0,taget_width,target_height,scale_frame_wh_scale)
-            dbg.print("{0}scale end".format(d))
+            dbg.print("{0} start scale".format(d))
+            scale_dir_pictures(dbg,d,0,taget_width,target_height,scale_frame_wh_scale)
+            dbg.print("{0} scale end".format(d))
     else:
-        dbg.print("{0}start scale".format(scale_dir))
-        scale_dir(dbg,scale_dir,scale_selected_frame_scale_tab,scale_frame_width,scale_frame_height,scale_frame_wh_scale)
-        dbg.print("{0}scale end".format(scale_dir))
+        dbg.print("{0} start scale".format(scale_dir))
+        scale_dir_pictures(dbg,scale_dir,scale_selected_frame_scale_tab,scale_frame_width,scale_frame_height,scale_frame_wh_scale)
+        dbg.print("{0} scale end".format(scale_dir))
 
 
     dbg.print("completed.")
 
 
-def scale_dir(dbg,scale_dir:str,scale_selected_frame_scale_tab:int,
+def scale_dir_pictures(dbg,scale_dir:str,scale_selected_frame_scale_tab:int,
                     scale_frame_width:int,
                     scale_frame_height:int,
                     scale_frame_wh_scale:float):

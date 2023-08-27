@@ -168,10 +168,10 @@ def rename_keys(key_dir):
             os.rename(img, os.path.join(dirname, f))
 
 def ebsynth_utility_stage5(dbg, project_args):
-    dbg.print("stage4")
+    dbg.print("stage5")
     dbg.print("")
     
-    project_dir, _, frame_path, frame_mask_path, _, img2img_key_path, img2img_upscale_key_path = project_args
+    project_dir, _, frame_path, frame_mask_path, frame_key_output = project_args
 
     if not os.path.isdir(project_dir):
         dbg.print('project_dir : no such dir %s' % project_dir)
@@ -182,27 +182,11 @@ def ebsynth_utility_stage5(dbg, project_args):
 
     no_upscale = False
 
-    if not os.path.isdir(img2img_upscale_key_path):
-        dbg.print('img2img_upscale_key_path : no such dir %s' % img2img_upscale_key_path)
-        if not os.path.isdir(img2img_key_path):
-            return
-        
-        sample_img2img_key = glob.glob( os.path.join(img2img_key_path , "*.png" ) )[0]
-        img_height1, img_width1, _ = cv2.imread(sample_img2img_key).shape
-        sample_frame = glob.glob( os.path.join(frame_path , "*.png" ) )[0]
-        img_height2, img_width2, _ = cv2.imread(sample_frame).shape
-
-        if img_height1 != img_height2 or img_width1 != img_width2:
-            return
-        
-        dbg.print('The size of frame and img2img_key matched. use %s instead' % img2img_key_path)
-        img2img_upscale_key_path = img2img_key_path
-        no_upscale = True
-
-    else:
-        rename_keys(img2img_upscale_key_path)
+    if not os.path.isdir(frame_key_output):
+        dbg.print('frame_key_output : no such dir %s' % frame_key_output)
+        return
     
-    number_of_digits, keys = search_key_dir( img2img_upscale_key_path )
+    number_of_digits, keys = search_key_dir( frame_key_output )
     
     if number_of_digits == -1:
         dbg.print('no key frame')
@@ -232,7 +216,7 @@ def ebsynth_utility_stage5(dbg, project_args):
         "file_name" : "/[" + "#" *  number_of_digits + "].png",
         "number_of_digits" : number_of_digits,
         
-        "key_dir" : "img2img_upscale_key" if no_upscale == False else "img2img_key",
+        "key_dir" : "video_key_output",
         "video_dir" : "video_frame",
         "mask_dir" : "video_mask",
         "key_weight" : 1.0,
