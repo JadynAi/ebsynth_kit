@@ -8,8 +8,8 @@ from PIL import Image
 
 from extensions.ebsynth_kit.stage1 import ebsynth_utility_stage1
 from extensions.ebsynth_kit.stage4 import ebsynth_utility_stage4
+from extensions.ebsynth_kit.stage5 import ebsynth_utility_stage5
 from extensions.ebsynth_kit.stage6 import ebsynth_utility_stage6
-from extensions.ebsynth_kit.stage7 import ebsynth_utility_stage7
 
 
 def x_ceiling(value, step):
@@ -28,7 +28,13 @@ class debug_string:
     def to_string(self):
         return self.txt
 
-def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_path:str, key_add_last_frame:bool, selected_frame_type:int, frame_width:int, frame_height:int, frame_wh_scale:float, blend_rate:float, export_type:str):
+def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_path:str, key_add_last_frame:bool, selected_frame_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
+                    auto_scale:bool,
+                    scale_dir:str,        
+                    scale_selected_frame_scale_tab:int,
+                    scale_frame_width:int,
+                    scale_frame_height:int,
+                    scale_frame_wh_scale:float, blend_rate:float, export_type:str):
     args = locals()
     info = ""
     info = dump_dict(info, args)
@@ -82,8 +88,16 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
         return process_end( dbg, "" )
     
     elif stage_index == 3:
-        ebsynth_utility_stage5(dbg, project_args, is_invert_mask)
+        ebsynth_utility_stage4(dbg, project_args, auto_scale,
+                    scale_dir,        
+                    scale_selected_frame_scale_tab,
+                    scale_frame_width,
+                    scale_frame_height,
+                    scale_frame_wh_scale)
     elif stage_index == 4:
+        ebsynth_utility_stage5(dbg, project_args)
+        
+    elif stage_index == 5:
         dbg.print("stage 6")
         dbg.print("")
         dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -94,16 +108,8 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
         dbg.print("(I recommend associating the .ebs file with EbSynth.exe.)")
         dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return process_end( dbg, "" )
-        
-    elif stage_index == 5:
-        ebsynth_utility_stage6(dbg, project_args, blend_rate, export_type, is_invert_mask)
     elif stage_index == 6:
-        if mask_mode != "Normal":
-            dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            dbg.print("Please reset [configuration]->[etc]->[Mask Mode] to Normal.")
-            dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-            return process_end( dbg, "" )
-        ebsynth_utility_stage7(dbg, project_args, bg_src, bg_type, mask_blur_size, mask_threshold, fg_transparency, export_type)
+        ebsynth_utility_stage6(dbg, project_args, blend_rate, export_type)
     else:
         pass
 

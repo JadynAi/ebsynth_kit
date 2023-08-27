@@ -105,7 +105,7 @@ def trying_to_add_audio(original_movie_path, no_snd_movie_path, output_path, tmp
     
     return False
 
-def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type,is_invert_mask):
+def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type):
     dbg.print("stage 6")
     dbg.print("")
 
@@ -123,8 +123,6 @@ def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type,is_invert_m
     dbg.print("export_type: {}".format(export_type))
     dbg.print("fps: {}".format(fps))
     
-    if is_invert_mask:
-        project_dir = os.path.join( project_dir , "inv")
 
     tmp_dir = os.path.join( project_dir , "crossfade_tmp")
 
@@ -210,8 +208,6 @@ def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type,is_invert_m
     
     ### create movie
     movie_base_name = time.strftime("%Y%m%d-%H%M%S")
-    if is_invert_mask:
-        movie_base_name = "inv_" + movie_base_name
     
     nosnd_path = os.path.join(project_dir , movie_base_name + get_ext(export_type))
     

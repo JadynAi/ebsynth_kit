@@ -1,4 +1,5 @@
 
+from cProfile import label
 import gradio as gr
 
 from ebsynth_kit import ebsynth_utility_process
@@ -30,7 +31,9 @@ def on_ui_tabs():
 
                             frame_size.select(fn=lambda: 0, inputs=[], outputs=[selected_frame_scale_tab])
                             frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
-                        with gr.Accordion("Stage4 setting",open=False):
+                        with gr.Accordion("Stage4 setting(Optional)",open=False):
+                            auto_scale = gr.Checkbox(label="Auto scale,If Auto Scale is open, click generate button will scale video_key/video_key_output/video_frame/video_mask all files to original video size", value=True)
+                            scale_dir = gr.Textbox(label='Need to scale directory', lines=1)
                             scale_selected_frame_scale_tab = gr.State(value=0)
                             with gr.Tabs(elem_id="scale_frame_width_height",default=1):
                                 with gr.Tab("Frame resize by size",elem_id='scale_frame_wh_1') as scale_frame_size:
@@ -63,14 +66,14 @@ def on_ui_tabs():
                                                         Otherwise pick keyframes according to the set keyframe options. <br>\
                                                     Please note that if the video_frame or video_key folder exists, the corresponding steps will be skipped. <br><br>\
                                                 <b>stage 2(optional)</b> <br>\
-                                                    Mask sequence frames.<br><br>\
+                                                    Mask sequence frames.<br>\
                                                     Use SegmentAnything or whatever you like to mask all images in the video_frame folder.<br><br>\
                                                 <b>stage 3</b> <br>\
                                                     img2img keyframes.It is recommended to use multi frame scripts to img2img.<br><br>\
                                                 <b>stage 4(optional)</b> <br>\
-                                                    Enlarge or reduce all the pictures in the folder you specify, or crop them to the size you want.<br><br>\
-                                                    In the process of img2img, the size of the frame is generally reduced.<br><br>\
-                                                    The purpose of this step is to scale the image back to the size of the original video before encoding it into a video.<br><br>\
+                                                    Enlarge or reduce all the pictures in the folder you specify, or crop them to the size you want.<br>\
+                                                    In the process of img2img, the size of the frame is generally reduced.<br>\
+                                                    The purpose of this step is to scale the image back to the size of the original video before encoding it into a video.<br>\
                                                     It is recommended that you restore the size of the pictures in the video_key/video_key_output/video_frame/video_mask file.<br><br>\
                                                 <b>stage 5</b> <br>\
                                                     Generate .ebs file.(ebsynth project file)<br><br>\
@@ -106,6 +109,13 @@ def on_ui_tabs():
                     frame_height,
 
                     frame_wh_scale,
+
+                    auto_scale,
+                    scale_dir,
+                    scale_selected_frame_scale_tab,
+                    scale_frame_width,
+                    scale_frame_height,
+                    scale_frame_wh_scale,
 
                     blend_rate,
                     export_type,

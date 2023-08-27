@@ -77,9 +77,9 @@ class Script(scripts.Script):
             label='Initial denoising strength',
             value=1,
             elem_id=self.elem_id("first_denoise"))
-        append_interrogation = gr.Dropdown(
-            label="Append interrogated prompt at each iteration", choices=[
-                "None", "CLIP", "DeepBooru"], value="None")
+        # append_interrogation = gr.Dropdown(
+        #     label="Append interrogated prompt at each iteration", choices=[
+        #         "None", "CLIP", "DeepBooru"], value="None")
         third_frame_image = gr.Dropdown(
             label="Third column (reference) image",
             choices=[
@@ -193,7 +193,6 @@ class Script(scripts.Script):
         )
 
         return [
-            append_interrogation,
             input_dir,
             output_dir,
             first_denoise,
@@ -221,7 +220,6 @@ class Script(scripts.Script):
     def run(
             self,
             p,
-            append_interrogation,
             input_dir,
             output_dir,
             first_denoise,
@@ -578,12 +576,12 @@ class Script(scripts.Script):
             # if opts.img2img_color_correction:
             #     p.color_corrections = initial_color_corrections
 
-            if append_interrogation != "None":
-                p.prompt = original_prompt
-                if append_interrogation == "CLIP":
-                    p.prompt += shared.interrogator.interrogate(p.init_images[0])
-                elif append_interrogation == "DeepBooru":
-                    p.prompt += deepbooru.model.tag(p.init_images[0])
+            # if append_interrogation != "None":
+            #     p.prompt = original_prompt
+            #     if append_interrogation == "CLIP":
+            #         p.prompt += shared.interrogator.interrogate(p.init_images[0])
+            #     elif append_interrogation == "DeepBooru":
+            #         p.prompt += deepbooru.model.tag(p.init_images[0])
 
             if use_csv or use_txt:
                 p.prompt = original_prompt + prompt_list[i]
