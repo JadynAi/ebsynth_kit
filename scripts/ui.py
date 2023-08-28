@@ -55,7 +55,7 @@ def on_ui_tabs():
                                 debug_info = gr.HTML(elem_id="ebs_info_area", value=".")
 
                             with gr.Column(scale=2):
-                                stage_index = gr.Radio(label='Process Stage', choices=["stage 1","stage 2","stage 3","stage 4","stage 5","stage 6","stage 7"], value="stage 1", type="index")
+                                stage_index = gr.Radio(label='Process Stage', choices=["stage 1","stage 1.1","stage 2","stage 3","stage 4","stage 5","stage 6","stage 7"], value="stage 1", type="index")
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
                                                 The process of creating a video can be divided into the following stages.<br>\
                                                 (Stage 2,3 only show a guide and do nothing actual processing.)<br><br>\
@@ -65,6 +65,10 @@ def on_ui_tabs():
                                                         Automatically selected if auto mode is selected. <br>\
                                                         Otherwise pick keyframes according to the set keyframe options. <br>\
                                                     Please note that if the video_frame or video_key folder exists, the corresponding steps will be skipped. <br><br>\
+                                                <b>stage 1.1(optional,Increase the number of keyframes)</b> <br>\
+                                                    If the number of keyframes is too few,then after ebsynth runs,it will cause screen tearing, and many sequence frames cannot be used.<br>\
+                                                    This step is to increase the number of keyframes.<br>\
+                                                    This step will delete the original video_key folder and generate a new video_key folder.Maybe you need backup the folder.<br><br>\
                                                 <b>stage 2(optional)</b> <br>\
                                                     Mask sequence frames.<br>\
                                                     Use SegmentAnything or whatever you like to mask all images in the video_frame folder.<br><br>\
