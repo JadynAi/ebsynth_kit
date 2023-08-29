@@ -69,7 +69,7 @@ def on_ui_tabs():
                                                     Mask sequence frames.<br>\
                                                     Use SegmentAnything or whatever you like to mask all images in the video_frame folder.<br><br>\
                                                 <b>stage 3</b> <br>\
-                                                    img2img keyframes.It is recommended to use multi frame scripts to img2img.<br><br>\
+                                                    img2img keyframes to directory video_key_output.It is recommended to use multi frame scripts to img2img.<br><br>\
                                                 <b>stage 4(optional)</b> <br>\
                                                     Enlarge or reduce all the pictures in the folder you specify, or crop them to the size you want.<br>\
                                                     The purpose of this step is to scale the image back to the size of the original video before encoding it into a video.<br>\

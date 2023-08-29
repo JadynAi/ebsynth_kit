@@ -62,7 +62,7 @@ def resize_all_img_by_scale(dbg, path, scale):
 
 def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last_frame:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
     original_movie_path = video_path
-    project_dir, _, frame_path, frame_mask_path, _, = project_args
+    project_dir, _, frame_path, frame_mask_path, frame_key_output, = project_args
     tmp_key_frame = os.path.join(project_dir , "tmp_keys")
     video_key =  os.path.join(project_dir , "video_key")
     dbg.print(original_movie_path)
@@ -78,6 +78,9 @@ def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last
         shutil.rmtree(frame_path,ignore_errors=True)
         shutil.rmtree(tmp_key_frame,ignore_errors=True)
         shutil.rmtree(video_key,ignore_errors=True)
+    
+    if not os.path.isdir(frame_key_output):
+        os.makedirs(frame_key_output, exist_ok=True)
 
     if os.path.isdir( frame_mask_path ):
         dbg.print("Skip mask dir create")
