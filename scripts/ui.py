@@ -5,8 +5,6 @@ import gradio as gr
 from ebsynth_kit import ebsynth_utility_process
 from modules import script_callbacks
 from modules.call_queue import wrap_gradio_gpu_call
-from tkinter import filedialog
-import queue
 
 
 def on_ui_tabs():
@@ -58,12 +56,10 @@ def on_ui_tabs():
                                 stage_index = gr.Radio(label='Process Stage', choices=["stage 1","stage 1.1","stage 2","stage 3","stage 4","stage 5","stage 6","stage 7"], value="stage 1", type="index")
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
                                                 The process of creating a video can be divided into the following stages.<br>\
-                                                (Stage 2,3 only show a guide and do nothing actual processing.)<br><br>\
+                                                (Stage 2,3,5 only show a guide and do nothing actual processing.)<br><br>\
                                                 <b>stage 1</b> <br>\
                                                     Extract frames from the original video to directory 'video_frame'. <br>\
                                                     Pick keyframes from sequence frames to directory 'video_key'. <br>\
-                                                        Automatically selected if auto mode is selected. <br>\
-                                                        Otherwise pick keyframes according to the set keyframe options. <br>\
                                                     Please note that if the video_frame or video_key folder exists, the corresponding steps will be skipped. <br><br>\
                                                 <b>stage 1.1(optional,Increase the number of keyframes)</b> <br>\
                                                     If the number of keyframes is too few,then after ebsynth runs,it will cause screen tearing, and many sequence frames cannot be used.<br>\
@@ -76,7 +72,6 @@ def on_ui_tabs():
                                                     img2img keyframes.It is recommended to use multi frame scripts to img2img.<br><br>\
                                                 <b>stage 4(optional)</b> <br>\
                                                     Enlarge or reduce all the pictures in the folder you specify, or crop them to the size you want.<br>\
-                                                    In the process of img2img, the size of the frame is generally reduced.<br>\
                                                     The purpose of this step is to scale the image back to the size of the original video before encoding it into a video.<br>\
                                                     It is recommended that you restore the size of the pictures in the video_key/video_key_output/video_frame/video_mask file.<br><br>\
                                                 <b>stage 5</b> <br>\

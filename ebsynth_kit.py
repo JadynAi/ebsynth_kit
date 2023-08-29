@@ -7,6 +7,7 @@ import glob
 from PIL import Image
 
 from extensions.ebsynth_kit.stage1 import ebsynth_utility_stage1
+from extensions.ebsynth_kit.stage1 import supplementary_keyframe
 from extensions.ebsynth_kit.stage4 import ebsynth_utility_stage4
 from extensions.ebsynth_kit.stage5 import ebsynth_utility_stage5
 from extensions.ebsynth_kit.stage6 import ebsynth_utility_stage6
@@ -69,8 +70,10 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
 
     if stage_index == 0:
         ebsynth_utility_stage1(dbg, project_args, key_add_last_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale)
-
     elif stage_index == 1:
+        supplementary_keyframe(dbg, project_args, key_add_last_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale)
+
+    elif stage_index == 2:
         dbg.print("stage 2")
         dbg.print("!!! !!! !!!")
         dbg.print("Semantically segment all the pictures under the video_frame folder and process them into mask pictures!")
@@ -78,7 +81,7 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
         dbg.print("Or use any other way you like to get the mask image")
         return process_end( dbg, "" )
 
-    elif stage_index == 2:
+    elif stage_index == 3:
         dbg.print("stage 3")
         dbg.print("")
         dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -87,17 +90,17 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
         dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return process_end( dbg, "" )
     
-    elif stage_index == 3:
+    elif stage_index == 4:
         ebsynth_utility_stage4(dbg, project_args, auto_scale,
                     scale_dir,        
                     scale_selected_frame_scale_tab,
                     scale_frame_width,
                     scale_frame_height,
                     scale_frame_wh_scale)
-    elif stage_index == 4:
+    elif stage_index == 5:
         ebsynth_utility_stage5(dbg, project_args)
         
-    elif stage_index == 5:
+    elif stage_index == 6:
         dbg.print("stage 6")
         dbg.print("")
         dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -108,7 +111,7 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
         dbg.print("(I recommend associating the .ebs file with EbSynth.exe.)")
         dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return process_end( dbg, "" )
-    elif stage_index == 6:
+    elif stage_index == 7:
         ebsynth_utility_stage6(dbg, project_args, blend_rate, export_type)
     else:
         pass
