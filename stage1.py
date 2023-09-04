@@ -217,7 +217,7 @@ def supplementary_keyframe(dbg, project_args, key_add_last_frame:bool, frame_res
               '-c:v', 'libx264',
               '-preset', 'slow', 
               '-x264-params', f'keyint={2*fps}:min-keyint={fps}:scenecut=100',
-              '-vf', '-yadif=mode=1:parity=-1:deint=0,setpts=N/FRAME_RATE/TB',  
+              '-vf', 'yadif=mode=1:parity=-1:deint=0,setpts=N/FRAME_RATE/TB',  
               '-c:a', 'copy',
               added_key_frame_video_path])
     handle_video(dbg,project_args,added_key_frame_video_path,True,key_add_last_frame,frame_resize_type, frame_width, frame_height, frame_wh_scale)
