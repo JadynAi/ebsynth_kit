@@ -5,10 +5,7 @@ import cv2
 import re
 import shutil
 
-from transformers import AutoProcessor, CLIPSegForImageSegmentation
-from PIL import Image
-import torch
-import numpy as np
+from typing import List
 import time
 
 
