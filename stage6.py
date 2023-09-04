@@ -109,7 +109,7 @@ def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type):
     dbg.print("stage 7")
     dbg.print("")
 
-    project_dir, original_movie_path, _, _, _, _, _ = project_args
+    project_dir, original_movie_path, _, _, _, = project_args
 
     fps = 30
     clip = cv2.VideoCapture(original_movie_path)
@@ -220,10 +220,10 @@ def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type):
     
     if export_type == "mp4":
 
-        with_snd_path = os.path.join(project_dir , movie_base_name + '_with_snd.mp4')
+        with_audio_path = os.path.join(project_dir , movie_base_name + '_with_audio.mp4')
 
-        if trying_to_add_audio(original_movie_path, nosnd_path, with_snd_path, tmp_dir):
-            dbg.print("exported : " + with_snd_path)
+        if trying_to_add_audio(original_movie_path, nosnd_path, with_audio_path, tmp_dir):
+            dbg.print("exported : " + with_audio_path)
     ### delete tmp directory
     shutil.rmtree(tmp_dir)
     dbg.print("")

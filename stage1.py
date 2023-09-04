@@ -98,7 +98,7 @@ def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last
         if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
             dbg.print("resize by size")
             # resize_all_img(dbg, frame_path, frame_width, frame_height)
-            subprocess.call(['ffmpeg', '-i', original_movie_path,
+            run_ffmpeg(['-i', original_movie_path,
                 '-qscale:v', '0', 
                 '-s', f'w={frame_width}:h={frame_height}', 
                 '-f', 'image2',
@@ -107,14 +107,14 @@ def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last
         elif frame_resize_type == 1 and frame_wh_scale != 1:
             dbg.print("resize by scale")
             # resize_all_img_by_scale(dbg, frame_path, frame_wh_scale)
-            subprocess.call(['ffmpeg', '-i', original_movie_path,
+            run_ffmpeg(['-i', original_movie_path,
                 '-qscale:v', '0', 
                 '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}', 
                 '-f', 'image2',
                 '-c:v', 'png', 
                 f'{frame_path}/%05d.png'])
         else:
-            subprocess.call(['ffmpeg', '-i', original_movie_path, 
+            run_ffmpeg(['-i', original_movie_path, 
                  '-qscale:v', '0',
                  '-f', 'image2', 
                  '-c:v', 'png',
@@ -133,7 +133,7 @@ def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last
             dbg.print("resize key by size")
             shutil.rmtree(video_key)
             # resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
-            subprocess.call(['ffmpeg', '-i', original_movie_path, '-qscale:v',
+            run_ffmpeg(['-i', original_movie_path, '-qscale:v',
                             '-s', f'w={frame_width}:h={frame_height}', 
                             '0', '-vf',
                             'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
@@ -142,13 +142,13 @@ def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last
             dbg.print("resize key by scale")
             shutil.rmtree(video_key)
             # resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
-            subprocess.call(['ffmpeg', '-i', original_movie_path, '-qscale:v',
+            run_ffmpeg(['-i', original_movie_path, '-qscale:v',
                             '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}', 
                             '0', '-vf',
                             'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
                             '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
         else:
-            subprocess.call(['ffmpeg', '-i', original_movie_path, '-qscale:v', '0', '-vf',
+            run_ffmpeg(['-i', original_movie_path, '-qscale:v', '0', '-vf',
                    'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
                    '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
         
@@ -216,14 +216,23 @@ def supplementary_keyframe(dbg, project_args, key_add_last_frame:bool, frame_res
         capture.release()
     print("original video fps%s".format(fps))
 
-    subprocess.call(['ffmpeg', 
-              '-i', original_movie_path,
+    run_ffmpeg(['-i', original_movie_path,
               '-c:v', 'libx264',
               '-preset', 'slow', 
-              '-x264-params', f'keyint={2*fps}:min-keyint={fps}:scenecut=100',  
+              '-x264-params', f'keyint={2*fps}:min-keyint={fps}:scenecut=100',
+              '-vf', '-yadif=mode=1:parity=-1:deint=0,setpts=N/FRAME_RATE/TB',  
               '-c:a', 'copy',
               added_key_frame_video_path])
     handle_video(dbg,project_args,added_key_frame_video_path,True,key_add_last_frame,frame_resize_type, frame_width, frame_height, frame_wh_scale)
+
+def run_ffmpeg(args: List[str]) -> bool:
+    commands = [
+        'ffmpeg',
+        '-hide_banner',
+        '-hwaccel','auto',
+        *args
+    ]
+    subprocess.call(commands)
 
 
 
