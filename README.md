@@ -24,5 +24,21 @@ Use SegmentAnything or whatever you like to mask all images in the video_frame f
 img2img keyframes.It is recommended to use multi frame scripts to img2img.I want you to select the output directory as a video_key_output under the project directory.
 It is highly recommended to use this plugin to generate keyframed pictures [sequence toolkit](https://github.com/OedoSoldier/sd-webui-image-sequence-toolkit)
 
+#### step4 
+
+The options bar on the left provides configuration options. This is an optional step. Before compositing the video, consider whether to enlarge or reduce the frame size based on personal circumstances.
+
+#### step5
+
+This part of the code comes from ebsynt utility, which generates ebs files based on the video_key folder and video_frame folder.
+
+#### step6
+
+Install ebsynth software, open the ebs file directly, and then run all
+
+#### step7
+
+The ebsynth software will generate the corresponding converted frame folder in the project directory, starting with output. This step is to synthesize the converted frames into a video.
+
 
 
