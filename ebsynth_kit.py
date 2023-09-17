@@ -35,7 +35,7 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
                     scale_selected_frame_scale_tab:int,
                     scale_frame_width:int,
                     scale_frame_height:int,
-                    scale_frame_wh_scale:float, blend_rate:float, export_type:str):
+                    scale_frame_wh_scale:float, output_fps:int, blend_rate:float, export_type:str):
     args = locals()
     info = ""
     info = dump_dict(info, args)
@@ -112,7 +112,7 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
         dbg.print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return process_end( dbg, "" )
     elif stage_index == 7:
-        ebsynth_utility_stage6(dbg, project_args, blend_rate, export_type)
+        ebsynth_utility_stage6(dbg, project_args, output_fps, blend_rate, export_type)
     else:
         pass
 

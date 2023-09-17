@@ -105,17 +105,20 @@ def trying_to_add_audio(original_movie_path, no_snd_movie_path, output_path, tmp
     
     return False
 
-def ebsynth_utility_stage6(dbg, project_args, blend_rate,export_type):
+def ebsynth_utility_stage6(dbg, project_args, output_fps, blend_rate,export_type):
     dbg.print("stage 7")
     dbg.print("")
 
     project_dir, original_movie_path, _, _, _, = project_args
 
     fps = 30
-    clip = cv2.VideoCapture(original_movie_path)
-    if clip:
-        fps = clip.get(cv2.CAP_PROP_FPS)
-        clip.release()
+    if output_fps != -1 and output_fps != 0:
+        fps = output_fps
+    else:
+        clip = cv2.VideoCapture(original_movie_path)
+        if clip:
+            fps = clip.get(cv2.CAP_PROP_FPS)
+            clip.release()
     
     blend_rate = clamp(blend_rate, 0.0, 1.0)
 
