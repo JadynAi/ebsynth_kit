@@ -5,6 +5,8 @@ import gradio as gr
 from ebsynth_kit import ebsynth_utility_process
 from modules import script_callbacks
 from modules.call_queue import wrap_gradio_gpu_call
+from stage1 import ebsynth_stage1
+import ebsynth_kit
 
 
 def on_ui_tabs():
@@ -71,8 +73,29 @@ def on_ui_tabs():
                                     gr.Button("Increase the number of keyframes", elem_id="increase_key_frames", variant='primary')
                                     gr.Button("Add last frame to keyframes", elem_id="add_last_frame", variant='primary')
 
-                                gr.Button("Run stage 1", elem_id="run_1", variant='primary')
+                                run_stage_1 = gr.Button("Run stage 1", elem_id="run_1", variant='primary')
+                                args_stage1 = dict(
+                                    fn=wrap_gradio_gpu_call(ebsynth_stage1),
+                                    inputs=[
+                                        0,
 
+                                        project_dir,
+                                        original_movie_path,
+
+                                        selected_frame_scale_tab,
+
+                                        frame_width,
+                                        frame_height,
+
+                                        frame_wh_scale,
+                                    ],
+                                    outputs=[
+                                        debug_info,
+                                        html_info,
+                                    ],
+                                    show_progress=False,
+                                )
+                                run_stage_1.click(**ebs_args)
 
                             with gr.Tab("Stage 2",elem_id='stage_2') as stage2:
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\

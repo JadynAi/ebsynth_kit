@@ -57,7 +57,7 @@ def resize_all_img_by_scale(dbg, path, scale):
         cv2.imwrite(png, img)
         dbg.print(f"Processing image {i+1}/{len(pngs)}")
 
-def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last_frame:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
     original_movie_path = video_path
     project_dir, _, frame_path, frame_mask_path, frame_key_output, = project_args
     tmp_key_frame = os.path.join(project_dir , "tmp_keys")
@@ -186,15 +186,15 @@ def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, key_add_last
 
 
 
-def ebsynth_utility_stage1(dbg, project_args, key_add_last_frame:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def ebsynth_stage1(dbg, project_args, frame_resize_type, frame_width, frame_height, frame_wh_scale):
     dbg.print("stage1")
     dbg.print("")
 
     _, original_movie_path, _, _, _, = project_args
-    handle_video(dbg,project_args,original_movie_path,False,key_add_last_frame,frame_resize_type, frame_width, frame_height, frame_wh_scale)
+    handle_video(dbg,project_args,original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale)
 
 
-def supplementary_keyframe(dbg, project_args, key_add_last_frame:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def supplementary_keyframe(dbg, project_args, frame_resize_type, frame_width, frame_height, frame_wh_scale):
     dbg.print("stage1.1 ")
     dbg.print("")
 
@@ -220,7 +220,7 @@ def supplementary_keyframe(dbg, project_args, key_add_last_frame:bool, frame_res
               '-vf', 'yadif=mode=1:parity=-1:deint=0,setpts=N/FRAME_RATE/TB',  
               '-c:a', 'copy',
               added_key_frame_video_path])
-    handle_video(dbg,project_args,added_key_frame_video_path,True,key_add_last_frame,frame_resize_type, frame_width, frame_height, frame_wh_scale)
+    handle_video(dbg,project_args,added_key_frame_video_path,True,frame_resize_type, frame_width, frame_height, frame_wh_scale)
 
 def run_ffmpeg(args: List[str]) -> bool:
     commands = [

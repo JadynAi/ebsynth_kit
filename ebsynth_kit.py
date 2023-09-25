@@ -6,12 +6,14 @@ import cv2
 import glob
 from PIL import Image
 
-from extensions.ebsynth_kit.stage1 import ebsynth_utility_stage1
+from extensions.ebsynth_kit.stage1 import ebsynth_stage1
 from extensions.ebsynth_kit.stage1 import supplementary_keyframe
 from extensions.ebsynth_kit.stage4 import ebsynth_utility_stage4
 from extensions.ebsynth_kit.stage5 import ebsynth_utility_stage5
 from extensions.ebsynth_kit.stage6 import ebsynth_utility_stage6
 
+
+project_args= []
 
 def x_ceiling(value, step):
   return -(-value // step) * step
@@ -69,7 +71,7 @@ def ebsynth_utility_process(stage_index: int, project_dir:str, original_movie_pa
 
 
     if stage_index == 0:
-        ebsynth_utility_stage1(dbg, project_args, key_add_last_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale)
+        ebsynth_stage1(dbg, project_args, key_add_last_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale)
     elif stage_index == 1:
         supplementary_keyframe(dbg, project_args, key_add_last_frame, selected_frame_type, frame_width, frame_height, frame_wh_scale)
 
