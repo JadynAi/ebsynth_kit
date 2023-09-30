@@ -16,7 +16,6 @@ def on_ui_tabs():
             with gr.Column(variant='panel'):
 
                 with gr.Row():
-                    
                     with gr.Column(elem_id="detail",scale = 0.5):
                         gr.HTML(value="<p style='margin-bottom: 0.7em'>\
                                         The process of creating a video can be divided into the following stages.<br>\
@@ -52,6 +51,8 @@ def on_ui_tabs():
                             html_info = gr.HTML()
                             
                     with gr.Column(elem_id="process stage"):
+                        debug_info = gr.HTML(elem_id="ebs_info_area", value=".")
+
                         with gr.Tabs(elem_id="stage step",default=0):
                             with gr.Tab("Stage 1",elem_id='stage_1') as stage1:
                                 project_dir = gr.Textbox(label='Project directory', lines=1)
@@ -68,17 +69,17 @@ def on_ui_tabs():
                                     frame_size.select(fn=lambda: 0, inputs=[], outputs=[selected_frame_scale_tab])
                                     frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
 
-                                decoder_frames_fps = gr.Slider(minimum=1, maximum=240, step=1, label='Number of decoded sequence frames', value=12)
+                                with gr.Row(elem_id="frame_options"):
+                                    use_specific_fps = gr.Checkbox(label="Decode using a specific frame rate", value=True)
+                                    decoder_frames_fps = gr.Slider(minimum=1, maximum=240, step=1, label='Number of decoded sequence frames', value=12)
                                 with gr.Row(elem_id="sequence frame"):
                                     gr.Button("Increase the number of keyframes", elem_id="increase_key_frames", variant='primary')
                                     gr.Button("Add last frame to keyframes", elem_id="add_last_frame", variant='primary')
 
                                 run_stage_1 = gr.Button("Run stage 1", elem_id="run_1", variant='primary')
                                 args_stage1 = dict(
-                                    fn=wrap_gradio_gpu_call(ebsynth_stage1),
+                                    fn=wrap_gradio_gpu_call(ebsynth_utility_process),
                                     inputs=[
-                                        0,
-
                                         project_dir,
                                         original_movie_path,
 
@@ -88,6 +89,9 @@ def on_ui_tabs():
                                         frame_height,
 
                                         frame_wh_scale,
+
+                                        use_specific_fps,
+                                        decoder_frames_fps
                                     ],
                                     outputs=[
                                         debug_info,
@@ -95,7 +99,7 @@ def on_ui_tabs():
                                     ],
                                     show_progress=False,
                                 )
-                                run_stage_1.click(**ebs_args)
+                                run_stage_1.click(**args_stage1)
 
                             with gr.Tab("Stage 2",elem_id='stage_2') as stage2:
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
@@ -128,9 +132,7 @@ def on_ui_tabs():
                                 blend_rate = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Crossfade blend rate', value=1.0)
                                 export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
 
-                        with gr.Column(variant='manual'):
-                            with gr.Group():
-                                debug_info = gr.HTML(elem_id="ebs_info_area", value=".")
+                       
 
 
 

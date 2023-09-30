@@ -6,6 +6,7 @@ import re
 import shutil
 
 from typing import List
+from ebsynth_kit import project_args
 import time
 
 
@@ -57,7 +58,7 @@ def resize_all_img_by_scale(dbg, path, scale):
         cv2.imwrite(png, img)
         dbg.print(f"Processing image {i+1}/{len(pngs)}")
 
-def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale, decoder_frames_fps):
     original_movie_path = video_path
     project_dir, _, frame_path, frame_mask_path, frame_key_output, = project_args
     tmp_key_frame = os.path.join(project_dir , "tmp_keys")
@@ -186,12 +187,12 @@ def handle_video(dbg, project_args, video_path:str, is_re_gen:bool, frame_resize
 
 
 
-def ebsynth_stage1(dbg, project_args, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def ebsynth_stage1(dbg, frame_resize_type, frame_width, frame_height, frame_wh_scale):
     dbg.print("stage1")
     dbg.print("")
 
-    _, original_movie_path, _, _, _, = project_args
-    handle_video(dbg,project_args,original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale)
+    _, original_movie_path, _, _, _,decoder_frames_fps = project_args
+    handle_video(dbg,original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale, decoder_frames_fps)
 
 
 def supplementary_keyframe(dbg, project_args, frame_resize_type, frame_width, frame_height, frame_wh_scale):
