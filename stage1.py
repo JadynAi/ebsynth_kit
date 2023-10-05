@@ -6,7 +6,7 @@ import re
 import shutil
 
 from typing import List
-from ebsynth_kit import project_args
+from ebsynth_kit import project_args, ebsynth_utility_process, dump_dict, debug_string, process_end
 import time
 
 
@@ -58,9 +58,9 @@ def resize_all_img_by_scale(dbg, path, scale):
         cv2.imwrite(png, img)
         dbg.print(f"Processing image {i+1}/{len(pngs)}")
 
-def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale, decoder_frames_fps):
+def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
     original_movie_path = video_path
-    project_dir, _, frame_path, frame_mask_path, frame_key_output, = project_args
+    project_dir, _, frame_path, frame_mask_path, frame_key_output, decoder_frames_fps = project_args
     tmp_key_frame = os.path.join(project_dir , "tmp_keys")
     video_key =  os.path.join(project_dir , "video_key")
     dbg.print(original_movie_path)
@@ -93,30 +93,33 @@ def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_wi
         frame_width = max(frame_width,-1)
         frame_height = max(frame_height,-1)
 
+        extra_args = []
+        if decoder_frames_fps > 0:
+            extra_args = [
+                '-vf', 'fps=' + str(decoder_frames_fps),
+                '-f', 'image2',
+                '-c:v', 'png', 
+                f'{frame_path}/%05d.png']
+        else:
+            extra_args = [ '-f', 'image2',
+                '-c:v', 'png', 
+                f'{frame_path}/%05d.png']
+
         if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
             dbg.print("resize by size")
             # resize_all_img(dbg, frame_path, frame_width, frame_height)
             run_ffmpeg(['-i', original_movie_path,
                 '-qscale:v', '0', 
-                '-s', f'w={frame_width}:h={frame_height}', 
-                '-f', 'image2',
-                '-c:v', 'png', 
-                f'{frame_path}/%05d.png'])
+                '-s', f'w={frame_width}:h={frame_height}'] + extra_args)
         elif frame_resize_type == 1 and frame_wh_scale != 1:
             dbg.print("resize by scale")
             # resize_all_img_by_scale(dbg, frame_path, frame_wh_scale)
             run_ffmpeg(['-i', original_movie_path,
                 '-qscale:v', '0', 
-                '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}', 
-                '-f', 'image2',
-                '-c:v', 'png', 
-                f'{frame_path}/%05d.png'])
+                '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}'] + extra_args)
         else:
             run_ffmpeg(['-i', original_movie_path, 
-                 '-qscale:v', '0',
-                 '-f', 'image2', 
-                 '-c:v', 'png',
-                 f'{frame_path}/%05d.png'])
+                 '-qscale:v', '0'] + extra_args)
 
         dbg.print("frame extracted")
     
@@ -187,17 +190,35 @@ def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_wi
 
 
 
-def ebsynth_stage1(dbg, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def ebsynth_stage1(project_dir:str, original_movie_path:str, frame_resize_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
+                    use_specific_fps:bool,
+                    decoder_frames_fps:int):
+    args = locals()
+    info = ""
+    info = dump_dict(info, args)
+    dbg = debug_string()
+
+    ebsynth_utility_process(project_dir, original_movie_path, frame_resize_type, frame_width, frame_height, frame_wh_scale, use_specific_fps, decoder_frames_fps)
+
+    _, original_movie_path, _, _, _,decoder_frames_fps = project_args
     dbg.print("stage1")
     dbg.print("")
 
-    _, original_movie_path, _, _, _,decoder_frames_fps = project_args
-    handle_video(dbg,original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale, decoder_frames_fps)
+    handle_video(dbg,original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale)
+    process_end( dbg, info )
 
 
-def supplementary_keyframe(dbg, project_args, frame_resize_type, frame_width, frame_height, frame_wh_scale):
-    dbg.print("stage1.1 ")
+def supplementary_keyframe(project_dir:str, original_movie_path:str, frame_resize_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
+                    use_specific_fps:bool,
+                    decoder_frames_fps:int):
+    args = locals()
+    info = ""
+    info = dump_dict(info, args)
+    dbg = debug_string()
+    dbg.print("stage1 supplementary key frames")
     dbg.print("")
+
+    ebsynth_utility_process(project_dir, original_movie_path, frame_resize_type, frame_width, frame_height, frame_wh_scale, use_specific_fps, decoder_frames_fps)
 
     project_dir, original_movie_path, frame_path, frame_mask_path, _, = project_args
     added_key_frame_video_path =  os.path.join(project_dir , "tmp_supplementary_key_frame_video.mp4")
@@ -222,6 +243,7 @@ def supplementary_keyframe(dbg, project_args, frame_resize_type, frame_width, fr
               '-c:a', 'copy',
               added_key_frame_video_path])
     handle_video(dbg,project_args,added_key_frame_video_path,True,frame_resize_type, frame_width, frame_height, frame_wh_scale)
+    process_end( dbg, info )
 
 def run_ffmpeg(args: List[str]) -> bool:
     commands = [

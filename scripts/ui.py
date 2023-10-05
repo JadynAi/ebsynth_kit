@@ -6,6 +6,7 @@ from ebsynth_kit import ebsynth_utility_process
 from modules import script_callbacks
 from modules.call_queue import wrap_gradio_gpu_call
 from stage1 import ebsynth_stage1
+from stage1 import supplementary_keyframe
 import ebsynth_kit
 
 
@@ -73,12 +74,12 @@ def on_ui_tabs():
                                     use_specific_fps = gr.Checkbox(label="Decode using a specific frame rate", value=True)
                                     decoder_frames_fps = gr.Slider(minimum=1, maximum=240, step=1, label='Number of decoded sequence frames', value=12)
                                 with gr.Row(elem_id="sequence frame"):
-                                    gr.Button("Increase the number of keyframes", elem_id="increase_key_frames", variant='primary')
-                                    gr.Button("Add last frame to keyframes", elem_id="add_last_frame", variant='primary')
+                                    increase_key_frame_btn = gr.Button("Increase the number of keyframes", elem_id="increase_key_frames", variant='primary')
+                                    add_last_frame_btn = gr.Button("Add last frame to keyframes", elem_id="add_last_frame", variant='primary')
 
                                 run_stage_1 = gr.Button("Run stage 1", elem_id="run_1", variant='primary')
                                 args_stage1 = dict(
-                                    fn=wrap_gradio_gpu_call(ebsynth_utility_process),
+                                    fn=wrap_gradio_gpu_call(ebsynth_stage1),
                                     inputs=[
                                         project_dir,
                                         original_movie_path,
@@ -100,6 +101,30 @@ def on_ui_tabs():
                                     show_progress=False,
                                 )
                                 run_stage_1.click(**args_stage1)
+
+                                args_add_key_frame = dict(
+                                    fn=wrap_gradio_gpu_call(supplementary_keyframe),
+                                    inputs=[
+                                        project_dir,
+                                        original_movie_path,
+
+                                        selected_frame_scale_tab,
+
+                                        frame_width,
+                                        frame_height,
+
+                                        frame_wh_scale,
+
+                                        use_specific_fps,
+                                        decoder_frames_fps
+                                    ],
+                                    outputs=[
+                                        debug_info,
+                                        html_info,
+                                    ],
+                                    show_progress=False,
+                                )
+                                increase_key_frame_btn.click(**args_add_key_frame)
 
                             with gr.Tab("Stage 2",elem_id='stage_2') as stage2:
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
@@ -131,45 +156,6 @@ def on_ui_tabs():
                                 output_fps = gr.Number(value=-1, label="Output Video FPS", precision=0, interactive=True)
                                 blend_rate = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Crossfade blend rate', value=1.0)
                                 export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
-
-                       
-
-
-
-            ebs_args = dict(
-                fn=wrap_gradio_gpu_call(ebsynth_utility_process),
-                inputs=[
-                    0,
-
-                    project_dir,
-                    original_movie_path,
-
-                    key_add_last_frame,
-                    selected_frame_scale_tab,
-
-                    frame_width,
-                    frame_height,
-
-                    frame_wh_scale,
-
-                    auto_scale,
-                    scale_dir,
-                    scale_selected_frame_scale_tab,
-                    scale_frame_width,
-                    scale_frame_height,
-                    scale_frame_wh_scale,
-
-                    output_fps,
-                    blend_rate,
-                    export_type,
-                ],
-                outputs=[
-                    debug_info,
-                    html_info,
-                ],
-                show_progress=False,
-            )
-            # generate_btn.click(**ebs_args)
            
     return (ebs_interface, "Ebsynth kit", "ebs_interface"),
 

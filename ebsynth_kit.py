@@ -6,8 +6,6 @@ import cv2
 import glob
 from PIL import Image
 
-from extensions.ebsynth_kit.stage1 import ebsynth_stage1
-
 
 project_args= []
 
@@ -26,18 +24,17 @@ class debug_string:
         self.txt += comment + '\n'
     def to_string(self):
         return self.txt
+    
+def process_end(dbg, info):
+    return plaintext_to_html(dbg.to_string()), plaintext_to_html(info)
 
-def ebsynth_utility_process(project_dir:str, original_movie_path:str, selected_frame_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
+def ebsynth_utility_process(project_dir:str, original_movie_path:str, frame_resize_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
                     use_specific_fps:bool,
                     decoder_frames_fps:int):
     args = locals()
     info = ""
     info = dump_dict(info, args)
     dbg = debug_string()
-
-
-    def process_end(dbg, info):
-        return plaintext_to_html(dbg.to_string()), plaintext_to_html(info)
 
 
     project_dir = project_dir.replace("\"","")
@@ -60,8 +57,5 @@ def ebsynth_utility_process(project_dir:str, original_movie_path:str, selected_f
     if not use_specific_fps:
         decoder_frames_fps = -1
     
-
+    global project_args
     project_args = [project_dir, original_movie_path_new, frame_path, frame_mask_path, frame_key_output, decoder_frames_fps]
-
-    ebsynth_stage1(dbg, selected_frame_type, frame_width, frame_height, frame_wh_scale)
-    return process_end( dbg, info )
