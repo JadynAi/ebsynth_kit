@@ -6,6 +6,7 @@ import shutil
 import time
 import cv2
 import numpy as np
+import ebsynth_kit
 
 
 def clamp(n, smallest, largest):
@@ -105,11 +106,11 @@ def trying_to_add_audio(original_movie_path, no_snd_movie_path, output_path, tmp
     
     return False
 
-def ebsynth_utility_stage6(dbg, project_args, output_fps, blend_rate,export_type):
-    dbg.print("stage 7")
-    dbg.print("")
+def ebsynth_stage6(output_fps, blend_rate, export_type):
+    print("stage 7")
+    print("")
 
-    project_dir, original_movie_path, _, _, _, = project_args
+    project_dir, original_movie_path, _, _, _, _ , = ebsynth_kit.project_args
 
     fps = 30
     if output_fps != -1 and output_fps != 0:
@@ -122,9 +123,9 @@ def ebsynth_utility_stage6(dbg, project_args, output_fps, blend_rate,export_type
     
     blend_rate = clamp(blend_rate, 0.0, 1.0)
 
-    dbg.print("blend_rate: {}".format(blend_rate))
-    dbg.print("export_type: {}".format(export_type))
-    dbg.print("fps: {}".format(fps))
+    print("blend_rate: {}".format(blend_rate))
+    print("export_type: {}".format(export_type))
+    print("fps: {}".format(fps))
     
 
     tmp_dir = os.path.join( project_dir , "crossfade_tmp")
@@ -137,7 +138,7 @@ def ebsynth_utility_stage6(dbg, project_args, output_fps, blend_rate,export_type
     number_of_digits, out_dirs = search_out_dirs( project_dir, blend_rate )
     
     if number_of_digits == -1:
-        dbg.print('no out dir')
+        print('no out dir')
         return
     
     ### create frame imgs
@@ -219,16 +220,16 @@ def ebsynth_utility_stage6(dbg, project_args, output_fps, blend_rate,export_type
 
     create_movie_from_frames( tmp_dir, start, end, number_of_digits, fps, nosnd_path, export_type)
 
-    dbg.print("exported : " + nosnd_path)
+    print("exported : " + nosnd_path)
     
     if export_type == "mp4":
 
         with_audio_path = os.path.join(project_dir , movie_base_name + '_with_audio.mp4')
 
         if trying_to_add_audio(original_movie_path, nosnd_path, with_audio_path, tmp_dir):
-            dbg.print("exported : " + with_audio_path)
+            print("exported : " + with_audio_path)
     ### delete tmp directory
     shutil.rmtree(tmp_dir)
-    dbg.print("")
-    dbg.print("completed.")
+    print("")
+    print("completed.")
 

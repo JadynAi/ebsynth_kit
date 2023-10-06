@@ -72,7 +72,6 @@ def handle_video(video_path:str, is_re_gen:bool, frame_resize_type, frame_width,
             original_movie_path = handle_fps_path
             print(f"handle fps video completed")
 
-    ebsynth_kit.project_args.append(original_movie_path)
     tmp_key_frame = os.path.join(project_dir , "tmp_keys")
     video_key =  os.path.join(project_dir , "video_key")
     print(original_movie_path)

@@ -7,6 +7,8 @@ from modules import script_callbacks
 from modules.call_queue import wrap_gradio_gpu_call
 from stage1 import ebsynth_stage1
 from stage1 import supplementary_keyframe
+from stage5 import ebsynth_stage5
+from stage6 import ebsynth_stage6
 import ebsynth_kit
 
 
@@ -149,13 +151,43 @@ def on_ui_tabs():
                                 scale_frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
 
                             with gr.Tab("Stage 5",elem_id='stage_5') as stage5:
-                                key_add_last_frame = gr.Checkbox(label="Add last frame to keyframes", value=True)
+                                run_stage_5 = gr.Button("Generate EBS file", elem_id="run_1", variant='primary')
+                                args_stage5 = dict(
+                                    fn=wrap_gradio_gpu_call(ebsynth_stage5),
+                                    inputs=[],
+                                    outputs=[
+                                        debug_info,
+                                        html_info,
+                                    ],
+                                    show_progress=False,
+                                )
+                                run_stage_5.click(**args_stage5)
                             with gr.Tab("Stage 6",elem_id='stage_6') as stage6:
-                                key_add_last_frame = gr.Checkbox(label="Add last frame to keyframes", value=True)
+                                gr.HTML(value="<p style='margin-bottom: 0.7em'>\
+                                            Based on the ebs file produced in step 5,<br>\
+                                            use ebsynth software to generate corresponding sequence frames. <br>\
+                                            The output folders are all folders starting with output in the project directory.<br>\
+                                        </p>")
                             with gr.Tab("Stage 7",elem_id='stage_7') as stage7:
                                 output_fps = gr.Number(value=-1, label="Output Video FPS", precision=0, interactive=True)
                                 blend_rate = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, label='Crossfade blend rate', value=1.0)
                                 export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
+    
+                                run_stage_6 = gr.Button("Generate Output Video", elem_id="run_6", variant='primary')
+                                args_stage6 = dict(
+                                    fn=wrap_gradio_gpu_call(ebsynth_stage6),
+                                    inputs=[
+                                        output_fps,
+                                        blend_rate,
+                                        export_type,
+                                    ],
+                                    outputs=[
+                                        debug_info,
+                                        html_info,
+                                    ],
+                                    show_progress=False,
+                                )
+                                run_stage_6.click(**args_stage6)
            
     return (ebs_interface, "Ebsynth kit", "ebs_interface"),
 

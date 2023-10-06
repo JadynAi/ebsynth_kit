@@ -7,6 +7,7 @@ import time
 from sys import byteorder
 import binascii
 import numpy as np
+import ebsynth_kit
 
 SYNTHS_PER_PROJECT = 15
 
@@ -167,29 +168,29 @@ def rename_keys(key_dir):
             dirname = os.path.dirname(img)
             os.rename(img, os.path.join(dirname, f))
 
-def ebsynth_utility_stage5(dbg, project_args):
-    dbg.print("stage5")
-    dbg.print("")
+def ebsynth_stage5():
+    print("stage5")
+    print("")
     
-    project_dir, _, frame_path, frame_mask_path, frame_key_output = project_args
+    project_dir, _, frame_path, frame_mask_path, frame_key_output, _ , = ebsynth_kit.project_args
 
     if not os.path.isdir(project_dir):
-        dbg.print('project_dir : no such dir %s' % project_dir)
+        print('project_dir : no such dir %s' % project_dir)
         return
     if not os.path.isdir(frame_path):
-        dbg.print('frame_path : no such dir %s' % frame_path)
+        print('frame_path : no such dir %s' % frame_path)
         return
 
     no_upscale = False
 
     if not os.path.isdir(frame_key_output):
-        dbg.print('frame_key_output : no such dir %s' % frame_key_output)
+        print('frame_key_output : no such dir %s' % frame_key_output)
         return
     
     number_of_digits, keys = search_key_dir( frame_key_output )
     
     if number_of_digits == -1:
-        dbg.print('no key frame')
+        print('no key frame')
         return
     
     first_frame, last_frame = search_video_dir( frame_path )
@@ -246,17 +247,17 @@ def ebsynth_utility_stage5(dbg, project_args):
             export_project( project, proj_file_name )
             proj_index += 1
             tmp = []
-            dbg.print("exported : " + proj_file_name + ".ebs" )
+            print("exported : " + proj_file_name + ".ebs" )
     
     if tmp:
         project["synth_list"] = tmp
         proj_file_name = proj_base_name + "_" + str(proj_index).zfill(5)
         export_project( project, proj_file_name )
         proj_index += 1
-        dbg.print("exported : " + proj_file_name + ".ebs" )
+        print("exported : " + proj_file_name + ".ebs" )
     
-    dbg.print("")
-    dbg.print("completed.")
+    print("")
+    print("completed.")
 
 
 
