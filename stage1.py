@@ -6,7 +6,8 @@ import re
 import shutil
 
 from typing import List
-from ebsynth_kit import project_args, ebsynth_utility_process, dump_dict, debug_string, process_end
+from ebsynth_kit import ebsynth_utility_process
+import ebsynth_kit
 import time
 
 
@@ -40,13 +41,13 @@ def resize_all_img(dbg, path, frame_width, frame_height):
         img = cv2.imread(png)
         img = resize_img(img, frame_width, frame_height)
         cv2.imwrite(png, img)
-        dbg.print(f"Processing image {i+1}/{len(pngs)}")
+        print(f"Processing image {i+1}/{len(pngs)}")
 
 def resize_all_img_by_scale(dbg, path, scale):
     if not os.path.isdir(path):
         return
     if scale <= 0:
-        dbg.print("scale must bigger than zero!!!")
+        print("scale must bigger than zero!!!")
         return
     
     pngs = glob.glob( os.path.join(path, "*.png") )
@@ -56,14 +57,25 @@ def resize_all_img_by_scale(dbg, path, scale):
         img = cv2.imread(png)
         img = cv2.resize(img, (0,0),fx=scale,fy=scale)
         cv2.imwrite(png, img)
-        dbg.print(f"Processing image {i+1}/{len(pngs)}")
+        print(f"Processing image {i+1}/{len(pngs)}")
 
-def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+def handle_video(video_path:str, is_re_gen:bool, frame_resize_type, frame_width, frame_height, frame_wh_scale):
+    project_dir, _, frame_path, frame_mask_path, frame_key_output, decoder_frames_fps = ebsynth_kit.project_args
     original_movie_path = video_path
-    project_dir, _, frame_path, frame_mask_path, frame_key_output, decoder_frames_fps = project_args
+    if decoder_frames_fps > 0:
+        handle_fps_path = os.path.join(project_dir , f"{decoder_frames_fps}fpsOriginal.mp4")
+        if not os.path.isfile(handle_fps_path):
+            #备用命令 ffmpeg -i .\original.mp4 -c:v libx264 -preset slow -vf fps=12 -c:a copy output.mp4
+            run_ffmpeg(['-i', original_movie_path,
+              '-vf', f'fps={decoder_frames_fps}',  
+              '-c:a', 'copy', handle_fps_path])
+            original_movie_path = handle_fps_path
+            print(f"handle fps video completed")
+
+    ebsynth_kit.project_args.append(original_movie_path)
     tmp_key_frame = os.path.join(project_dir , "tmp_keys")
     video_key =  os.path.join(project_dir , "video_key")
-    dbg.print(original_movie_path)
+    print(original_movie_path)
 
     capture = cv2.VideoCapture(original_movie_path)
 
@@ -81,38 +93,30 @@ def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_wi
         os.makedirs(frame_key_output, exist_ok=True)
 
     if os.path.isdir( frame_mask_path ):
-        dbg.print("Skip mask dir create")
+        print("Skip mask dir create")
     else:
         os.makedirs(frame_mask_path, exist_ok=True)
 
     if os.path.isdir( frame_path ):
-        dbg.print("Skip frame extraction")
+        print("Skip frame extraction")
     else:
         os.makedirs(frame_path, exist_ok=True)
 
         frame_width = max(frame_width,-1)
         frame_height = max(frame_height,-1)
 
-        extra_args = []
-        if decoder_frames_fps > 0:
-            extra_args = [
-                '-vf', 'fps=' + str(decoder_frames_fps),
-                '-f', 'image2',
-                '-c:v', 'png', 
-                f'{frame_path}/%05d.png']
-        else:
-            extra_args = [ '-f', 'image2',
+        extra_args = [ '-f', 'image2',
                 '-c:v', 'png', 
                 f'{frame_path}/%05d.png']
 
         if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
-            dbg.print("resize by size")
+            print("resize by size")
             # resize_all_img(dbg, frame_path, frame_width, frame_height)
             run_ffmpeg(['-i', original_movie_path,
                 '-qscale:v', '0', 
                 '-s', f'w={frame_width}:h={frame_height}'] + extra_args)
         elif frame_resize_type == 1 and frame_wh_scale != 1:
-            dbg.print("resize by scale")
+            print("resize by scale")
             # resize_all_img_by_scale(dbg, frame_path, frame_wh_scale)
             run_ffmpeg(['-i', original_movie_path,
                 '-qscale:v', '0', 
@@ -121,7 +125,7 @@ def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_wi
             run_ffmpeg(['-i', original_movie_path, 
                  '-qscale:v', '0'] + extra_args)
 
-        dbg.print("frame extracted")
+        print("frame extracted")
     
     if not os.path.exists(tmp_key_frame):   
         os.makedirs(tmp_key_frame)
@@ -131,7 +135,7 @@ def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_wi
         frame_height = max(frame_height,-1)
 
         if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
-            dbg.print("resize key by size")
+            print("resize key by size")
             shutil.rmtree(video_key)
             # resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
             run_ffmpeg(['-i', original_movie_path, '-qscale:v',
@@ -140,7 +144,7 @@ def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_wi
                             'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
                             '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
         elif frame_resize_type == 1 and frame_wh_scale != 1:
-            dbg.print("resize key by scale")
+            print("resize key by scale")
             shutil.rmtree(video_key)
             # resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
             run_ffmpeg(['-i', original_movie_path, '-qscale:v',
@@ -184,45 +188,35 @@ def handle_video(dbg,video_path:str, is_re_gen:bool, frame_resize_type, frame_wi
                         break
         ### delete tmp directory
         shutil.rmtree(tmp_key_frame)
-        dbg.print("Pick key frame cost: {}".format(time.time() - start))
+        print("Pick key frame cost: {}".format(time.time() - start))
 
-    dbg.print("completed.")
+    print("completed.")
 
 
 
 def ebsynth_stage1(project_dir:str, original_movie_path:str, frame_resize_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
                     use_specific_fps:bool,
                     decoder_frames_fps:int):
-    args = locals()
-    info = ""
-    info = dump_dict(info, args)
-    dbg = debug_string()
-
     ebsynth_utility_process(project_dir, original_movie_path, frame_resize_type, frame_width, frame_height, frame_wh_scale, use_specific_fps, decoder_frames_fps)
 
-    _, original_movie_path, _, _, _,decoder_frames_fps = project_args
-    dbg.print("stage1")
-    dbg.print("")
+    _, original_movie_path, _, _, _,decoder_frames_fps = ebsynth_kit.project_args
+    print("stage1")
+    print("")
 
-    handle_video(dbg,original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale)
-    process_end( dbg, info )
+    handle_video(original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale)
 
 
 def supplementary_keyframe(project_dir:str, original_movie_path:str, frame_resize_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
                     use_specific_fps:bool,
                     decoder_frames_fps:int):
-    args = locals()
-    info = ""
-    info = dump_dict(info, args)
-    dbg = debug_string()
-    dbg.print("stage1 supplementary key frames")
-    dbg.print("")
+    print("stage1 supplementary key frames")
+    print("")
 
     ebsynth_utility_process(project_dir, original_movie_path, frame_resize_type, frame_width, frame_height, frame_wh_scale, use_specific_fps, decoder_frames_fps)
 
-    project_dir, original_movie_path, frame_path, frame_mask_path, _, = project_args
+    project_dir, original_movie_path, frame_path, frame_mask_path, _, = ebsynth_kit.project_args
     added_key_frame_video_path =  os.path.join(project_dir , "tmp_supplementary_key_frame_video.mp4")
-    dbg.print(original_movie_path)
+    print(original_movie_path)
     if os.path.isfile(added_key_frame_video_path):
         os.remove(added_key_frame_video_path)
 
@@ -242,8 +236,7 @@ def supplementary_keyframe(project_dir:str, original_movie_path:str, frame_resiz
               '-vf', 'yadif=mode=1:parity=-1:deint=0,setpts=N/FRAME_RATE/TB',  
               '-c:a', 'copy',
               added_key_frame_video_path])
-    handle_video(dbg,project_args,added_key_frame_video_path,True,frame_resize_type, frame_width, frame_height, frame_wh_scale)
-    process_end( dbg, info )
+    handle_video(added_key_frame_video_path,True,frame_resize_type, frame_width, frame_height, frame_wh_scale)
 
 def run_ffmpeg(args: List[str]) -> bool:
     commands = [
