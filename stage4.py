@@ -10,6 +10,7 @@ from PIL import Image
 import torch
 import numpy as np
 import time
+import ebsynth_kit
 
 
 def resize_img(img, w, h):
@@ -20,7 +21,7 @@ def resize_img(img, w, h):
 
     return cv2.resize(img, (w, h), interpolation=interpolation)
 
-def resize_all_img(dbg, path, frame_width, frame_height):
+def resize_all_img( path, frame_width, frame_height):
     if not os.path.isdir(path):
         return
     
@@ -47,11 +48,11 @@ def resize_all_img(dbg, path, frame_width, frame_height):
         cv2.imwrite(png, img)
         print(f"Processing image {i+1}/{len(pngs)}")
 
-def resize_all_img_by_scale(dbg, path, scale):
+def resize_all_img_by_scale( path, scale):
     if not os.path.isdir(path):
         return
     if scale <= 0:
-        dbg.print("scale must bigger than zero!!!")
+        print("scale must bigger than zero!!!")
         return
     
     pngs = glob.glob( os.path.join(path, "*.png") )
@@ -64,23 +65,23 @@ def resize_all_img_by_scale(dbg, path, scale):
         print(f"Processing image {i+1}/{len(pngs)}")
 
 
-def ebsynth_utility_stage4(dbg, project_args, auto_scale:bool,
+def ebsynth_stage4(auto_scale:bool,
                     scale_dir:str,        
                     scale_selected_frame_scale_tab:int,
                     scale_frame_width:int,
                     scale_frame_height:int,
                     scale_frame_wh_scale:float):
-    dbg.print("stage4")
-    dbg.print("")
+    print("stage4")
+    print("")
 
-    project_dir, original_movie_path, frame_path, frame_mask_path, frame_key_output, = project_args
+    project_dir, original_movie_path, frame_path, frame_mask_path, frame_key_output,_ = ebsynth_kit.project_args
 
     if auto_scale:
         if not os.path.isfile(original_movie_path):
-            dbg.print("{0} original_movie_path not found".format(original_movie_path))
+            print("{0} original_movie_path not found".format(original_movie_path))
             return
     
-        dbg.print(original_movie_path)
+        print(original_movie_path)
         capture = cv2.VideoCapture(original_movie_path)
 
         # 获取视频的宽度和高度
@@ -89,19 +90,19 @@ def ebsynth_utility_stage4(dbg, project_args, auto_scale:bool,
         target_dirs = [os.path.join(project_dir , "video_key"),
                        frame_path,frame_mask_path,frame_key_output]
         for d in target_dirs:
-            dbg.print("{0} start scale".format(d))
-            scale_dir_pictures(dbg,d,0,taget_width,target_height,scale_frame_wh_scale)
-            dbg.print("{0} scale end".format(d))
+            print("{0} start scale".format(d))
+            scale_dir_pictures(d,0,taget_width,target_height,scale_frame_wh_scale)
+            print("{0} scale end".format(d))
     else:
-        dbg.print("{0} start scale".format(scale_dir))
-        scale_dir_pictures(dbg,scale_dir,scale_selected_frame_scale_tab,scale_frame_width,scale_frame_height,scale_frame_wh_scale)
-        dbg.print("{0} scale end".format(scale_dir))
+        print("{0} start scale".format(scale_dir))
+        scale_dir_pictures(scale_dir,scale_selected_frame_scale_tab,scale_frame_width,scale_frame_height,scale_frame_wh_scale)
+        print("{0} scale end".format(scale_dir))
 
 
-    dbg.print("completed.")
+    print("completed.")
 
 
-def scale_dir_pictures(dbg,scale_dir:str,scale_selected_frame_scale_tab:int,
+def scale_dir_pictures(scale_dir:str,scale_selected_frame_scale_tab:int,
                     scale_frame_width:int,
                     scale_frame_height:int,
                     scale_frame_wh_scale:float):
@@ -111,11 +112,11 @@ def scale_dir_pictures(dbg,scale_dir:str,scale_selected_frame_scale_tab:int,
 
     if scale_selected_frame_scale_tab == 0:
         if scale_frame_width != -1 or scale_frame_height != -1:
-            dbg.print("scale dir resize by size")
-            resize_all_img(dbg, scale_dir, scale_frame_width, scale_frame_height)
+            print("scale dir resize by size")
+            resize_all_img( scale_dir, scale_frame_width, scale_frame_height)
     elif scale_selected_frame_scale_tab == 1:
         if scale_frame_wh_scale != 1:
-            dbg.print("scale dir resize by scale")
-            resize_all_img_by_scale(dbg, scale_dir, scale_frame_wh_scale)
+            print("scale dir resize by scale")
+            resize_all_img_by_scale( scale_dir, scale_frame_wh_scale)
 
 
