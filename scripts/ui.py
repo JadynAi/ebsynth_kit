@@ -7,6 +7,7 @@ from modules import script_callbacks
 from modules.call_queue import wrap_gradio_gpu_call
 from stage1 import ebsynth_stage1
 from stage1 import supplementary_keyframe
+from stage4 import ebsynth_stage4
 from stage5 import ebsynth_stage5
 from stage6 import ebsynth_stage6
 import ebsynth_kit
@@ -133,12 +134,19 @@ def on_ui_tabs():
                                             Mask sequence frames.<br>\
                                             Cutting out the characters or the subject you want can reduce background flicker. Of course, this step is optional.<br>\
                                             Use SegmentAnything or whatever you like to mask all images in the video_frame folder.<br>\
+                                            The video_mask folder has been created for you in the project directory. Please place the masked image processed by the mask into this folder.<br>\
+                                            The subsequent process will directly reference this folder.<br>\
                                         </p>")
                             with gr.Tab("Stage 3",elem_id='stage_3') as stage3:
-                                key_add_last_frame = gr.Checkbox(label="Add last frame to keyframes", value=True)
-                            with gr.Tab("Stage 4",elem_id='stage_4') as stage4:
+                                gr.HTML(value="<p style='margin-bottom: 0.7em'>\
+                                            img2img keyframes.It is recommended to use multi frame scripts to img2img.<br>\
+                                            I want you to select the output directory as a video_key_output under the project directory.<br>\
+                                            It is highly recommended to use this plugin to generate keyframed pictures [sequence toolkit](https://github.com/OedoSoldier/sd-webui-image-sequence-toolkit).<br>\
+                                        </p>")
+                            with gr.Tab("Stage 4(Optional)",elem_id='stage_4') as stage4:
                                 auto_scale = gr.Checkbox(label="Auto scale,If Auto Scale is open, click generate button will scale video_key/video_key_output/video_frame/video_mask all files to original video size", value=True)
                                 scale_dir = gr.Textbox(label='Need to scale directory', lines=1)
+
                                 scale_selected_frame_scale_tab = gr.State(value=0)
                                 with gr.Tabs(elem_id="scale_frame_width_height",default=1):
                                     with gr.Tab("Frame resize by size",elem_id='scale_frame_wh_1') as scale_frame_size:
@@ -147,8 +155,28 @@ def on_ui_tabs():
                                     with gr.Tab("Frame resize by scale",elem_id='scale_frame_wh_2') as scale_frame_scale:
                                         scale_frame_wh_scale = gr.Slider(minimum=0.1, maximum=2.0, step=0.1, label='Width and height scaling', value=1.0)
 
-                                scale_frame_size.select(fn=lambda: 0, inputs=[], outputs=[selected_frame_scale_tab])
-                                scale_frame_scale.select(fn=lambda: 1, inputs=[], outputs=[selected_frame_scale_tab])
+                                scale_frame_size.select(fn=lambda: 0, inputs=[], outputs=[scale_selected_frame_scale_tab])
+                                scale_frame_scale.select(fn=lambda: 1, inputs=[], outputs=[scale_selected_frame_scale_tab])
+
+                                run_stage_4 = gr.Button("Scale images", elem_id="run_4", variant='primary')
+
+                                args_4 = dict(
+                                    fn=wrap_gradio_gpu_call(ebsynth_stage4),
+                                    inputs=[
+                                        auto_scale,
+                                        scale_dir,
+                                        scale_selected_frame_scale_tab,
+                                        scale_frame_width,
+                                        scale_frame_height,
+                                        scale_frame_wh_scale
+                                    ],
+                                    outputs=[
+                                        debug_info,
+                                        html_info,
+                                    ],
+                                    show_progress=False,
+                                )
+                                run_stage_4.click(**args_4)
 
                             with gr.Tab("Stage 5",elem_id='stage_5') as stage5:
                                 run_stage_5 = gr.Button("Generate EBS file", elem_id="run_1", variant='primary')
