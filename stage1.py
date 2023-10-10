@@ -126,35 +126,38 @@ def handle_video(video_path:str, is_re_gen:bool, frame_resize_type, frame_width,
 
         print("frame extracted")
     
-    if not os.path.exists(tmp_key_frame):   
-        os.makedirs(tmp_key_frame)
-    # 解码关键帧,检查文件夹是否跳过    
-    if not os.listdir(tmp_key_frame):
-        frame_width = max(frame_width,-1)
-        frame_height = max(frame_height,-1)
+    if not os.listdir(video_key):
+        if not os.path.exists(tmp_key_frame):   
+            os.makedirs(tmp_key_frame)
+        # 解码关键帧,检查文件夹是否跳过    
+        if not os.listdir(tmp_key_frame):
+            frame_width = max(frame_width,-1)
+            frame_height = max(frame_height,-1)
 
-        if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
-            print("resize key by size")
-            shutil.rmtree(video_key)
-            # resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
-            run_ffmpeg(['-i', original_movie_path, '-qscale:v',
-                            '-s', f'w={frame_width}:h={frame_height}', 
-                            '0', '-vf',
-                            'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
-                            '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
-        elif frame_resize_type == 1 and frame_wh_scale != 1:
-            print("resize key by scale")
-            shutil.rmtree(video_key)
-            # resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
-            run_ffmpeg(['-i', original_movie_path, '-qscale:v',
-                            '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}', 
-                            '0', '-vf',
-                            'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
-                            '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
-        else:
-            run_ffmpeg(['-i', original_movie_path, '-qscale:v', '0', '-vf',
-                   'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
-                   '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+            if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
+                print("resize key by size")
+                shutil.rmtree(video_key)
+                # resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
+                run_ffmpeg(['-i', original_movie_path, '-qscale:v',
+                                '-s', f'w={frame_width}:h={frame_height}', 
+                                '0', '-vf',
+                                'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
+                                '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+            elif frame_resize_type == 1 and frame_wh_scale != 1:
+                print("resize key by scale")
+                shutil.rmtree(video_key)
+                # resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
+                run_ffmpeg(['-i', original_movie_path, '-qscale:v',
+                                '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}', 
+                                '0', '-vf',
+                                'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
+                                '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+            else:
+                run_ffmpeg(['-i', original_movie_path, '-qscale:v', '0', '-vf',
+                       'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
+                       '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+    else:
+        print("Skip decoder key frame")
         
     # 新文件夹路径  
     if not os.path.exists(video_key):
@@ -205,37 +208,44 @@ def ebsynth_stage1(project_dir:str, original_movie_path:str, frame_resize_type:i
     handle_video(original_movie_path,False,frame_resize_type, frame_width, frame_height, frame_wh_scale)
 
 
-def supplementary_keyframe(project_dir:str, original_movie_path:str, frame_resize_type:int, frame_width:int, frame_height:int, frame_wh_scale:float,
-                    use_specific_fps:bool,
-                    decoder_frames_fps:int):
+def supplementary_keyframe():
     print("stage1 supplementary key frames")
     print("")
 
-    ebsynth_utility_process(project_dir, original_movie_path, frame_resize_type, frame_width, frame_height, frame_wh_scale, use_specific_fps, decoder_frames_fps)
 
-    project_dir, original_movie_path, frame_path, frame_mask_path, _, = ebsynth_kit.project_args
-    added_key_frame_video_path =  os.path.join(project_dir , "tmp_supplementary_key_frame_video.mp4")
-    print(original_movie_path)
-    if os.path.isfile(added_key_frame_video_path):
-        os.remove(added_key_frame_video_path)
+    project_dir, _, frame_path, _, _,_ = ebsynth_kit.project_args
+    video_key =  os.path.join(project_dir , "video_key")
+    if not os.listdir(video_key):
+        print("key frames directory is empty")
+    elif not os.listdir(frame_path):
+        print("frame directory is empty")
+    else:
+        video_key_files = sorted(os.listdir(video_key), key=lambda x: int(x.split(".")[0]))
 
-    capture = cv2.VideoCapture(original_movie_path)
+        copy_nums = []
 
-    # 获取视频的宽度和高度
-    fps = 30
-    if capture:
-        fps = capture.get(cv2.CAP_PROP_FPS)
-        capture.release()
-    print("original video fps%s".format(fps))
+        for i in range(1, len(video_key_files) - 1):
+            num = int(video_key_files[i].split(".")[0])
+            prev_num = int(video_key_files[i - 1].split(".")[0])
+            next_num = int(video_key_files[i + 1].split(".")[0])
+            mid_num_prev = (num + prev_num) // 2
+            mid_num_next = (num + next_num) // 2
+            copy_nums.append(mid_num_prev)
+            copy_nums.append(mid_num_next)
 
-    run_ffmpeg(['-i', original_movie_path,
-              '-c:v', 'libx264',
-              '-preset', 'slow', 
-              '-x264-params', f'keyint={2*fps}:min-keyint={fps}:scenecut=100',
-              '-vf', 'yadif=mode=1:parity=-1:deint=0,setpts=N/FRAME_RATE/TB',  
-              '-c:a', 'copy',
-              added_key_frame_video_path])
-    handle_video(added_key_frame_video_path,True,frame_resize_type, frame_width, frame_height, frame_wh_scale)
+        copy_nums = list(set(copy_nums))
+
+        key_file_ext = os.path.splitext(video_key_files[0])[1]
+
+        for num in copy_nums:
+            file = f"{num:05d}{key_file_ext}"
+            print(f"find file :{file}")
+            src_file = os.path.join(frame_path, file)
+            dst_file = os.path.join(video_key, file)
+            if os.path.isfile(src_file):
+                shutil.copy(src_file, dst_file)
+    print("supplemetart key fram completed")
+
 
 def run_ffmpeg(args: List[str]) -> bool:
     commands = [

@@ -81,9 +81,7 @@ def on_ui_tabs():
                                     add_last_frame_btn = gr.Button("Add last frame to keyframes", elem_id="add_last_frame", variant='primary')
 
                                 run_stage_1 = gr.Button("Run stage 1", elem_id="run_1", variant='primary')
-                                args_stage1 = dict(
-                                    fn=wrap_gradio_gpu_call(ebsynth_stage1),
-                                    inputs=[
+                                run_stage_1.click(ebsynth_stage1,[
                                         project_dir,
                                         original_movie_path,
 
@@ -96,31 +94,11 @@ def on_ui_tabs():
 
                                         use_specific_fps,
                                         decoder_frames_fps
-                                    ],
-                                    outputs=[
-                                        debug_info,
-                                        html_info,
-                                    ],
-                                    show_progress=False,
-                                )
-                                run_stage_1.click(**args_stage1)
+                                    ])
 
                                 args_add_key_frame = dict(
                                     fn=wrap_gradio_gpu_call(supplementary_keyframe),
-                                    inputs=[
-                                        project_dir,
-                                        original_movie_path,
-
-                                        selected_frame_scale_tab,
-
-                                        frame_width,
-                                        frame_height,
-
-                                        frame_wh_scale,
-
-                                        use_specific_fps,
-                                        decoder_frames_fps
-                                    ],
+                                    inputs=[],
                                     outputs=[
                                         debug_info,
                                         html_info,
