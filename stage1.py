@@ -242,10 +242,21 @@ def supplementary_keyframe():
             print(f"find file :{file}")
             src_file = os.path.join(frame_path, file)
             dst_file = os.path.join(video_key, file)
-            if os.path.isfile(src_file):
+            if os.path.isfile(src_file) and not os.path.isfile(dst_file):
                 shutil.copy(src_file, dst_file)
     print("supplemetart key fram completed")
 
+def add_last_frame_to_key():
+    project_dir, _, frame_path, _, _,_ = ebsynth_kit.project_args
+    video_key =  os.path.join(project_dir , "video_key")
+
+    frames = sorted(os.listdir(frame_path), key=lambda x: int(x.split(".")[0]))
+    last_frame = frames[-1]
+    src_file = os.path.join(frame_path, last_frame)
+    dst_file = os.path.join(video_key, last_frame)
+    if os.path.isfile(src_file) and not os.path.isfile(dst_file):
+        shutil.copy(src_file, dst_file)
+    print("add last frame to key completed")
 
 def run_ffmpeg(args: List[str]) -> bool:
     commands = [

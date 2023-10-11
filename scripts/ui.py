@@ -7,6 +7,7 @@ from modules import script_callbacks
 from modules.call_queue import wrap_gradio_gpu_call
 from stage1 import ebsynth_stage1
 from stage1 import supplementary_keyframe
+from stage1 import add_last_frame_to_key
 from stage4 import ebsynth_stage4
 from stage5 import ebsynth_stage5
 from stage6 import ebsynth_stage6
@@ -96,16 +97,8 @@ def on_ui_tabs():
                                         decoder_frames_fps
                                     ])
 
-                                args_add_key_frame = dict(
-                                    fn=wrap_gradio_gpu_call(supplementary_keyframe),
-                                    inputs=[],
-                                    outputs=[
-                                        debug_info,
-                                        html_info,
-                                    ],
-                                    show_progress=False,
-                                )
-                                increase_key_frame_btn.click(**args_add_key_frame)
+                                increase_key_frame_btn.click(supplementary_keyframe)
+                                add_last_frame_btn.click(add_last_frame_to_key)
 
                             with gr.Tab("Stage 2",elem_id='stage_2') as stage2:
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
@@ -138,36 +131,18 @@ def on_ui_tabs():
 
                                 run_stage_4 = gr.Button("Scale images", elem_id="run_4", variant='primary')
 
-                                args_4 = dict(
-                                    fn=wrap_gradio_gpu_call(ebsynth_stage4),
-                                    inputs=[
+                                run_stage_4.click(ebsynth_stage4,[
                                         auto_scale,
                                         scale_dir,
                                         scale_selected_frame_scale_tab,
                                         scale_frame_width,
                                         scale_frame_height,
                                         scale_frame_wh_scale
-                                    ],
-                                    outputs=[
-                                        debug_info,
-                                        html_info,
-                                    ],
-                                    show_progress=False,
-                                )
-                                run_stage_4.click(**args_4)
+                                    ])
 
                             with gr.Tab("Stage 5",elem_id='stage_5') as stage5:
                                 run_stage_5 = gr.Button("Generate EBS file", elem_id="run_1", variant='primary')
-                                args_stage5 = dict(
-                                    fn=wrap_gradio_gpu_call(ebsynth_stage5),
-                                    inputs=[],
-                                    outputs=[
-                                        debug_info,
-                                        html_info,
-                                    ],
-                                    show_progress=False,
-                                )
-                                run_stage_5.click(**args_stage5)
+                                run_stage_5.click(ebsynth_stage5)
                             with gr.Tab("Stage 6",elem_id='stage_6') as stage6:
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
                                             Based on the ebs file produced in step 5,<br>\
@@ -180,20 +155,11 @@ def on_ui_tabs():
                                 export_type = gr.Dropdown(choices=["mp4","webm","gif","rawvideo"], value="mp4" ,label="Export type")
     
                                 run_stage_6 = gr.Button("Generate Output Video", elem_id="run_6", variant='primary')
-                                args_stage6 = dict(
-                                    fn=wrap_gradio_gpu_call(ebsynth_stage6),
-                                    inputs=[
+                                run_stage_6.click(ebsynth_stage6,[
                                         output_fps,
                                         blend_rate,
                                         export_type,
-                                    ],
-                                    outputs=[
-                                        debug_info,
-                                        html_info,
-                                    ],
-                                    show_progress=False,
-                                )
-                                run_stage_6.click(**args_stage6)
+                                    ])
            
     return (ebs_interface, "Ebsynth kit", "ebs_interface"),
 
