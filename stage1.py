@@ -70,7 +70,10 @@ def handle_video(video_path:str, is_re_gen:bool, frame_resize_type, frame_width,
               '-vf', f'fps={decoder_frames_fps}',  
               '-c:a', 'copy', handle_fps_path])
             original_movie_path = handle_fps_path
-            print(f"handle fps video completed")
+            print("handle fps video completed")
+        else:
+            print("fps video already exists")
+            original_movie_path = handle_fps_path
 
     tmp_key_frame = os.path.join(project_dir , "tmp_keys")
     video_key =  os.path.join(project_dir , "video_key")
@@ -126,42 +129,41 @@ def handle_video(video_path:str, is_re_gen:bool, frame_resize_type, frame_width,
 
         print("frame extracted")
     
-    if not os.listdir(video_key):
-        if not os.path.exists(tmp_key_frame):   
-            os.makedirs(tmp_key_frame)
-        # 解码关键帧,检查文件夹是否跳过    
-        if not os.listdir(tmp_key_frame):
-            frame_width = max(frame_width,-1)
-            frame_height = max(frame_height,-1)
-
-            if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
-                print("resize key by size")
-                shutil.rmtree(video_key)
-                # resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
-                run_ffmpeg(['-i', original_movie_path, '-qscale:v',
-                                '-s', f'w={frame_width}:h={frame_height}', 
-                                '0', '-vf',
-                                'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
-                                '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
-            elif frame_resize_type == 1 and frame_wh_scale != 1:
-                print("resize key by scale")
-                shutil.rmtree(video_key)
-                # resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
-                run_ffmpeg(['-i', original_movie_path, '-qscale:v',
-                                '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}', 
-                                '0', '-vf',
-                                'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
-                                '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
-            else:
-                run_ffmpeg(['-i', original_movie_path, '-qscale:v', '0', '-vf',
-                       'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
-                       '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+    if not os.path.exists(tmp_key_frame):   
+        os.makedirs(tmp_key_frame)
+    # 解码关键帧,检查文件夹是否跳过    
+    if not os.listdir(tmp_key_frame):
+        frame_width = max(frame_width,-1)
+        frame_height = max(frame_height,-1)
+        if frame_resize_type == 0 and (frame_width != -1 or frame_height != -1) and (frame_width != target_width or frame_height != target_height):
+            print("resize key by size")
+            shutil.rmtree(video_key)
+            # resize_all_img(dbg, tmp_key_frame, frame_width, frame_height)
+            run_ffmpeg(['-i', original_movie_path, '-qscale:v',
+                            '-s', f'w={frame_width}:h={frame_height}', 
+                            '0', '-vf',
+                            'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
+                            '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+        elif frame_resize_type == 1 and frame_wh_scale != 1:
+            print("resize key by scale")
+            shutil.rmtree(video_key)
+            # resize_all_img_by_scale(dbg, tmp_key_frame, frame_wh_scale)
+            run_ffmpeg(['-i', original_movie_path, '-qscale:v',
+                            '-s', f'in_w*{frame_wh_scale}:in_h*{frame_wh_scale}', 
+                            '0', '-vf',
+                            'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
+                            '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
+        else:
+            run_ffmpeg(['-i', original_movie_path, '-qscale:v', '0', '-vf',
+                   'select=eq(pict_type\\,I)', '-fps_mode', 'vfr',
+                   '-c:v', 'png', f'{tmp_key_frame}/%05d.png'])
     else:
         print("Skip decoder key frame")
         
     # 新文件夹路径  
     if not os.path.exists(video_key):
         os.makedirs(video_key)
+    if not os.listdir(video_key):
         start = time.time()
 
         start_index = 0
@@ -191,6 +193,8 @@ def handle_video(video_path:str, is_re_gen:bool, frame_resize_type, frame_width,
         ### delete tmp directory
         shutil.rmtree(tmp_key_frame)
         print("Pick key frame cost: {}".format(time.time() - start))
+    else:
+        print("Skip pick key frame")
 
     print("completed.")
 
