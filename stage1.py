@@ -66,9 +66,18 @@ def handle_video(video_path:str, is_re_gen:bool, frame_resize_type, frame_width,
         handle_fps_path = os.path.join(project_dir , f"{decoder_frames_fps}fpsOriginal.mp4")
         if not os.path.isfile(handle_fps_path):
             #备用命令 ffmpeg -i .\original.mp4 -c:v libx264 -preset slow -vf fps=12 -c:a copy output.mp4
+            fps = 30
+            capture = cv2.VideoCapture(original_movie_path)
+            if capture:
+                fps = capture.get(cv2.CAP_PROP_FPS)
+                capture.release()
+            print("original video fps%s".format(fps))
             run_ffmpeg(['-i', original_movie_path,
-              '-vf', f'fps={decoder_frames_fps}',  
-              '-c:a', 'copy', handle_fps_path])
+                        '-c:v', 'libx264',
+                        '-preset', 'slow', 
+                        '-x264-params', f'keyint={2*fps}:min-keyint={fps}:scenecut=100',
+                        '-vf', f'fps={decoder_frames_fps}',  
+                        '-c:a', 'copy', handle_fps_path])
             original_movie_path = handle_fps_path
             print("handle fps video completed")
         else:
