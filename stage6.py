@@ -110,9 +110,9 @@ def ebsynth_stage6(output_fps, blend_rate, export_type):
     print("stage 7")
     print("")
 
-    project_dir, original_movie_path, _, _, _, _ , = ebsynth_kit.project_args
+    project_dir, original_movie_path, _, _, _, decoder_frames_fps = ebsynth_kit.project_args
 
-    fps = 30
+    fps = decoder_frames_fps if decoder_frames_fps != 0 else 30
     if output_fps != -1 and output_fps != 0:
         fps = output_fps
     else:
