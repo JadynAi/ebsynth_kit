@@ -11,6 +11,8 @@ from stage1 import add_last_frame_to_key
 from stage4 import ebsynth_stage4
 from stage5 import ebsynth_stage5
 from stage6 import ebsynth_stage6
+from split_frame import split_sequence_frames
+from correct_frame_name import correct_split_frame_name
 import ebsynth_kit
 
 
@@ -141,8 +143,24 @@ def on_ui_tabs():
                                     ])
 
                             with gr.Tab("Stage 5",elem_id='stage_5') as stage5:
-                                run_stage_5 = gr.Button("Generate EBS file", elem_id="run_1", variant='primary')
-                                run_stage_5.click(ebsynth_stage5)
+                                with gr.Column(elem_id='stage_5_col'):
+                                    gr.HTML(value="<p style='margin-bottom: 0.7em'>\
+                                            Next there will be two options, one is to use ebsynth to stylize the sequence frame;<br>\
+                                            the other is to split the sequence frame according to the sequence number of the key frame, <br>\
+                                            and use reference only to continue img2img.<br>\
+                                        </p>")
+                                    run_stage_5 = gr.Button("Generate EBS file", elem_id="run_1", variant='primary')
+                                    run_stage_5.click(ebsynth_stage5)
+                                with gr.Column(elem_id='stage_5_reference_sequence'):
+                                    gr.HTML(value="<p style='margin-bottom: 0.7em'>\
+                                            Split sequence frames based on key frame numbers<br>\
+                                        </p>")
+                                    with gr.Row(elem_id='stage_5_reference_sequence_row'):
+                                        split_sequence = gr.Button("Split sequence frames", elem_id="run_1", variant='primary')
+                                        correct_sequence_frame_name = gr.Button("Correction keyframe name", elem_id="run_1", variant='primary')
+                                        split_sequence.click(split_sequence_frames)
+                                        correct_sequence_frame_name.click(correct_split_frame_name)
+
                             with gr.Tab("Stage 6",elem_id='stage_6') as stage6:
                                 gr.HTML(value="<p style='margin-bottom: 0.7em'>\
                                             Based on the ebs file produced in step 5,<br>\

@@ -39,12 +39,12 @@ def create_movie_from_frames( dir, start, end, number_of_digits, fps, output_pat
 
 def search_out_dirs(proj_dir, blend_rate):
     ### create out_dirs
-    p = re.compile(r'.*[\\\/]out\-([0-9]+)[\\\/]')
+    p = re.compile(r'.*[\\\/]output\-([0-9]+)[\\\/]')
 
     number_of_digits = -1
     
     out_dirs=[]
-    for d in glob.glob( os.path.join(proj_dir ,"out-*/"), recursive=False):
+    for d in glob.glob( os.path.join(proj_dir ,"output-*/"), recursive=False):
         m = p.fullmatch(d)
         if m:
             if number_of_digits == -1:
@@ -229,7 +229,7 @@ def ebsynth_stage6(output_fps, blend_rate, export_type):
         if trying_to_add_audio(original_movie_path, nosnd_path, with_audio_path, tmp_dir):
             print("exported : " + with_audio_path)
     ### delete tmp directory
-    shutil.rmtree(tmp_dir)
+    # shutil.rmtree(tmp_dir)
     print("")
     print("completed.")
 
